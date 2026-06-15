@@ -1,10 +1,8 @@
-// ================================================================
-//  CONFIGURATION DATA
-//  Venue pricing and PDF text/translations
-// ================================================================
+import { eur } from '../lib/formatters.js';
+import { MONTHS_CA } from './constants.js';
 
-const PRICE_CONFIG = {
-  vatRate: 0.10,  // IVA (10%)
+export const PRICE_CONFIG = {
+  vatRate: 0.10,
 
   venues: {
     'mas-vivencs': {
@@ -26,7 +24,7 @@ const PRICE_CONFIG = {
   },
 };
 
-const PDF_TEXT = {
+export const PDF_TEXT = {
   ca: {
     pdfTitle: 'Pressupost Estimat',
     refLabel: 'Referència',

@@ -1,4 +1,7 @@
-function GuestsControl({ value, onChange }) {
+import React from 'react';
+import { clamp } from '../utils/input.js';
+
+export default function GuestsControl({ value, onChange }) {
   const [draft, setDraft] = React.useState(String(value));
   const skipNextBlurCommit = React.useRef(false);
 

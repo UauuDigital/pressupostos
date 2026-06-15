@@ -1,4 +1,7 @@
-function VenueCards({ value, onChange, compact = false }) {
+import React from 'react';
+import { VENUES } from '../data/constants.js';
+
+export default function VenueCards({ value, onChange, compact = false }) {
   return (
     <div className={compact ? 'venue-grid venue-grid-compact' : 'venue-grid'}>
       {VENUES.map(v => (

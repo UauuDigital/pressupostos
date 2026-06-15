@@ -1,4 +1,10 @@
-function DateInfoStrip({ venueId, date }) {
+import React from 'react';
+import { lookupPrice } from '../data/calculator.js';
+import { PRICE_CONFIG } from '../data/config.js';
+import { DAYS_CA, MONTHS_CA, VENUES } from '../data/constants.js';
+import { eur } from '../lib/formatters.js';
+
+export default function DateInfoStrip({ venueId, date }) {
   if (!venueId || !date) return null;
   const d = new Date(date + 'T12:00:00');
   const year = d.getFullYear(), month = d.getMonth() + 1, dow = d.getDay();

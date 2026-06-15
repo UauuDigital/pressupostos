@@ -1,4 +1,15 @@
-﻿function App() {
+import React from 'react';
+import { PRICE_CONFIG } from './data/config.js';
+import { computeQuote } from './data/calculator.js';
+import { eur } from './lib/formatters.js';
+import VenueCards from './components/VenueCards.jsx';
+import DatePicker from './components/DatePicker.jsx';
+import GuestsControl from './components/GuestsControl.jsx';
+import DateInfoStrip from './components/DateInfoStrip.jsx';
+import ExtrasSection from './components/ExtrasSection.jsx';
+import SummaryPanel from './components/SummaryPanel.jsx';
+
+export default function App() {
   const [form, setForm] = React.useState(() => {
     try {
       localStorage.removeItem('uauu-v2-form');
@@ -210,7 +221,6 @@
         <SummaryPanel form={form} quote={quote} lang={lang} extraOptions={form.extraOptions} />
       </div>
 
-      {/* Barra resum fixa (només mòbil, via CSS) */}
       <div className="mobile-summary-bar">
         <div className="mobile-summary-bar-left">
           <div className="mobile-summary-bar-label">Total estimat</div>
@@ -229,7 +239,6 @@
         </button>
       </div>
 
-      {/* Drawer resum (només mòbil) */}
       <div className={`mobile-summary-drawer${mobileSummaryOpen ? ' is-open' : ''}`} aria-hidden={!mobileSummaryOpen}>
         <div className="mobile-summary-backdrop" onClick={() => setMobileSummaryOpen(false)} />
         <div className="mobile-summary-sheet">
@@ -239,11 +248,4 @@
       </div>
     </div>
   );
-}
-
-const mountApp = () => ReactDOM.createRoot(document.getElementById('root')).render(<App />);
-if (window.__uauuDataReady && typeof window.__uauuDataReady.then === 'function') {
-  window.__uauuDataReady.then(mountApp).catch(() => mountApp());
-} else {
-  mountApp();
 }
