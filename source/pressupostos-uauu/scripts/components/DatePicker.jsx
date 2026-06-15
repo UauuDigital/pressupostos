@@ -1,3 +1,5 @@
+import React from 'react';
+
 const DATE_PICKER_MONTHS = {
   ca: ['Gener','Febrer','Març','Abril','Maig','Juny','Juliol','Agost','Setembre','Octubre','Novembre','Desembre'],
   es: ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'],
@@ -9,7 +11,7 @@ const DATE_PICKER_DAYS = {
   en: ['Mo','Tu','We','Th','Fr','Sa','Su'],
 };
 
-function DatePicker({ value, onChange, min, lang = 'ca' }) {
+export default function DatePicker({ value, onChange, min, lang = 'ca' }) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
@@ -51,7 +53,6 @@ function DatePicker({ value, onChange, min, lang = 'ca' }) {
 
   function buildGrid() {
     const firstDow = new Date(viewYear, viewMonth, 1).getDay();
-    // Convertim: diumenge=0 → 6 (volem Dl com a primer)
     const offset = (firstDow + 6) % 7;
     const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
     const cells = [];
@@ -113,7 +114,6 @@ function DatePicker({ value, onChange, min, lang = 'ca' }) {
         <div className="dp-overlay">
           <div className="dp-overlay-backdrop" onClick={() => setOpen(false)} />
         <div className="dp-popover">
-          {/* Navegació any */}
           <div className="dp-year-row">
             <button type="button" className="dp-nav-btn" onClick={() => canGoYear(-1) && setViewYear(y => y - 1)} disabled={!canGoYear(-1)} aria-label="Any anterior">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
@@ -123,7 +123,6 @@ function DatePicker({ value, onChange, min, lang = 'ca' }) {
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
             </button>
           </div>
-          {/* Navegació mes */}
           <div className="dp-header">
             <button type="button" className="dp-nav-btn" onClick={prevMonth} disabled={!canGoPrev} aria-label="Mes anterior">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>

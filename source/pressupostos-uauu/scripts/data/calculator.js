@@ -1,9 +1,8 @@
-// ================================================================
-//  CALCULATOR / BUSINESS LOGIC
-//  Price lookups, quote generation, core calculations
-// ================================================================
+import { PRICE_CONFIG } from './config.js';
+import { wantsDropdown, getOptionLabel } from './parsers.js';
+import { eur } from '../lib/formatters.js';
 
-function lookupPrice(venueId, year, month, dow) {
+export function lookupPrice(venueId, year, month, dow) {
   const v = PRICE_CONFIG.venues[venueId];
   if (!v || !v.priceMatrix) return null;
 
@@ -26,7 +25,7 @@ function lookupPrice(venueId, year, month, dow) {
   return row ? { ...row, year: usedYear } : null;
 }
 
-function getExtras(venueId, year) {
+export function getExtras(venueId, year) {
   const v = PRICE_CONFIG.venues[venueId];
   if (!v || !v.extras) return [];
 
@@ -41,11 +40,11 @@ function getExtras(venueId, year) {
   return v.extras[usedYear] || [];
 }
 
-function getExtraLabel(extra, lang = 'ca') {
+export function getExtraLabel(extra, lang = 'ca') {
   return String(extra?.labels?.[lang] || extra?.labels?.ca || extra?.label || '').trim();
 }
 
-function computeQuote({ venue, date, guests, selectedExtras = {}, extraQuantities, extraOptions = {}, extraVariants = {}, lang = 'ca' }) {
+export function computeQuote({ venue, date, guests, selectedExtras = {}, extraQuantities, extraOptions = {}, extraVariants = {}, lang = 'ca' }) {
   if (!venue || !date || guests < 1) return null;
 
   const d = new Date(date + 'T12:00:00');
@@ -62,8 +61,6 @@ function computeQuote({ venue, date, guests, selectedExtras = {}, extraQuantitie
   const penaltyAmt = shortfall > 0 ? guests * minimumPenaltyPerPerson : 0;
 
   const allExtras = getExtras(venue, year);
-
-  const v = PRICE_CONFIG.venues[venue];
 
   const quantities = extraQuantities || {};
   const options = extraOptions || {};
@@ -103,7 +100,6 @@ function computeQuote({ venue, date, guests, selectedExtras = {}, extraQuantitie
     }
 
     if (e.id === 'barlliure') {
-
       const rates = e.barLliureRates || {};
       const premium = extraOpts.premium === true;
       const extraHours = Math.max(0, Math.min(3, Number(extraOpts.hours ?? 0)));
@@ -124,7 +120,6 @@ function computeQuote({ venue, date, guests, selectedExtras = {}, extraQuantitie
       if (premium) extraParts.push(`premium ${eur(premiumRate)}/pers. × ${adults}`);
       priceDetail = `2h incloses${extraParts.length ? ` · ${extraParts.join(' + ')}` : ''}`;
 
-
     } else if (e.quantityBased) {
       const extraUnitQty = Math.max(0, Math.round(Number(extraOpts.extraUnitQty ?? 0)));
       const extraUnitPrice = Number(e.extraUnitPair?.price ?? 0);
@@ -133,23 +128,19 @@ function computeQuote({ venue, date, guests, selectedExtras = {}, extraQuantitie
       const extraUnitLabel = e.extraUnitPair ? ` + ${extraUnitQty} ${e.extraUnitPair.label} × ${eur(extraUnitPrice)}` : '';
       priceDetail = `${quantity} ${unitLabel}${variantSuffix} × ${eur(currentPrice)}${extraUnitLabel}`;
 
-
     } else if (e.extraUnitPair) {
       const extraUnitQty = Math.max(0, Math.round(Number(extraOpts.extraUnitQty ?? 0)));
       const extraUnitPrice = Number(e.extraUnitPair.price ?? 0);
       computedPrice = currentPrice + (extraUnitQty * extraUnitPrice);
       priceDetail = `${eur(currentPrice)}${extraUnitQty > 0 ? ` + ${extraUnitQty} ${e.extraUnitPair.label} × ${eur(extraUnitPrice)}` : ''}`;
 
-
     } else if (e.pricingFn) {
       computedPrice = e.pricingFn(guests) || 0;
       priceDetail = e.pricingFnDetail ? e.pricingFnDetail(guests) : null;
 
-
     } else if (e.pricePerPerson) {
       computedPrice = Math.max(guests * e.pricePerPerson, e.minPrice || 0);
       priceDetail = `${guests} pers. × ${eur(e.pricePerPerson)} (mínim ${eur(e.minPrice)})`;
-
 
     } else {
       computedPrice = currentPrice;

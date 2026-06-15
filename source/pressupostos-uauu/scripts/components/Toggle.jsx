@@ -1,4 +1,6 @@
-function Toggle({ value, onChange, options }) {
+import React from 'react';
+
+export default function Toggle({ value, onChange, options }) {
   return (
     <div className="toggle-group">
       {options.map(o => (

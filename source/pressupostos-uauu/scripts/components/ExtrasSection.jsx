@@ -1,4 +1,9 @@
-﻿function ExtrasSection({
+import React from 'react';
+import { getExtras } from '../data/calculator.js';
+import { eur } from '../lib/formatters.js';
+import { normalizeQuantity } from '../utils/input.js';
+
+export default function ExtrasSection({
   venueId,
   year,
   date,
@@ -365,4 +370,3 @@
     </div>
   );
 }
-

@@ -1,9 +1,7 @@
-// ================================================================
-//  PARSING FUNCTIONS
-//  Column pickers, parsing spreadsheet cells into structured data
-// ================================================================
+import { SPREADSHEET_COLUMNS, VENUES } from './constants.js';
+import { normText, parseMoney, buildServiceId } from './utils.js';
 
-function pickColumn(row, keys) {
+export function pickColumn(row, keys) {
   for (const key of Object.keys(row)) {
     const normalizedKey = normText(key);
     if (keys.some(alias => normalizedKey === normText(alias) || normalizedKey.includes(normText(alias)) || normText(alias).includes(normalizedKey))) {
@@ -13,7 +11,7 @@ function pickColumn(row, keys) {
   return undefined;
 }
 
-function pickColumnStrict(row, keys) {
+export function pickColumnStrict(row, keys) {
   for (const key of Object.keys(row)) {
     const normalizedKey = normText(key);
     if (keys.some(alias => normalizedKey === normText(alias))) {
@@ -23,7 +21,7 @@ function pickColumnStrict(row, keys) {
   return undefined;
 }
 
-function pickColumnExcluding(row, keys, excludedPatterns = []) {
+export function pickColumnExcluding(row, keys, excludedPatterns = []) {
   for (const key of Object.keys(row)) {
     const normalizedKey = normText(key);
     if (excludedPatterns.some(p => normalizedKey.includes(normText(p)))) continue;
@@ -34,7 +32,7 @@ function pickColumnExcluding(row, keys, excludedPatterns = []) {
   return undefined;
 }
 
-function pickColumnExcludingStrict(row, keys, excludedPatterns = []) {
+export function pickColumnExcludingStrict(row, keys, excludedPatterns = []) {
   for (const key of Object.keys(row)) {
     const normalizedKey = normText(key);
     if (excludedPatterns.some(p => normalizedKey.includes(normText(p)))) continue;
@@ -48,7 +46,7 @@ function pickColumnExcludingStrict(row, keys, excludedPatterns = []) {
   return undefined;
 }
 
-function pickColumnLoose(row, patterns) {
+export function pickColumnLoose(row, patterns) {
   for (const key of Object.keys(row)) {
     const normalizedKey = normText(key);
     if (patterns.every(p => normalizedKey.includes(normText(p)))) {
@@ -58,7 +56,7 @@ function pickColumnLoose(row, patterns) {
   return undefined;
 }
 
-function pickColumnLooseExcluding(row, patterns, excludedPatterns = []) {
+export function pickColumnLooseExcluding(row, patterns, excludedPatterns = []) {
   for (const key of Object.keys(row)) {
     const normalizedKey = normText(key);
     if (excludedPatterns.some(p => normalizedKey.includes(normText(p)))) continue;
@@ -69,7 +67,7 @@ function pickColumnLooseExcluding(row, patterns, excludedPatterns = []) {
   return undefined;
 }
 
-function pickColumnRegex(row, regexList) {
+export function pickColumnRegex(row, regexList) {
   for (const key of Object.keys(row)) {
     const normalizedKey = normText(key);
     if (regexList.some(rx => rx.test(normalizedKey))) return row[key];
@@ -77,7 +75,7 @@ function pickColumnRegex(row, regexList) {
   return undefined;
 }
 
-function pickColumnRegexExcluding(row, regexList, excludedPatterns = []) {
+export function pickColumnRegexExcluding(row, regexList, excludedPatterns = []) {
   for (const key of Object.keys(row)) {
     const normalizedKey = normText(key);
     if (excludedPatterns.some(p => normalizedKey.includes(normText(p)))) continue;
@@ -86,7 +84,7 @@ function pickColumnRegexExcluding(row, regexList, excludedPatterns = []) {
   return undefined;
 }
 
-function parseExtraType(value) {
+export function parseExtraType(value) {
   const txt = normText(value).replace(/[^a-z0-9\s-]/g, ' ');
   if (!txt.trim()) return null;
   if (/(despleg|dropdown|select|selector|opcio|opcion|opciones)/.test(txt)) return 'desplegable';
@@ -95,16 +93,16 @@ function parseExtraType(value) {
   return null;
 }
 
-function wantsDropdown(extraListCell) {
+export function wantsDropdown(extraListCell) {
   const txt = normText(extraListCell);
   return /(^|[\s,;/|])despleg/.test(txt) || txt === 'desplegable';
 }
 
-function getOptionLabel(option, lang = 'ca') {
+export function getOptionLabel(option, lang = 'ca') {
   return String(option?.labels?.[lang] || option?.labels?.ca || option?.label || '').trim();
 }
 
-function parseServiceNames(row) {
+export function parseServiceNames(row) {
   const ca = pickColumn(row, SPREADSHEET_COLUMNS.nameCa) ?? pickColumn(row, SPREADSHEET_COLUMNS.name);
   const es = pickColumn(row, SPREADSHEET_COLUMNS.nameEs);
   const en = pickColumn(row, SPREADSHEET_COLUMNS.nameEn);
@@ -117,7 +115,7 @@ function parseServiceNames(row) {
   };
 }
 
-function parseJsonOptions(value) {
+export function parseJsonOptions(value) {
   const raw = String(value ?? '').trim();
   if (!raw) return [];
   try {
@@ -137,7 +135,7 @@ function parseJsonOptions(value) {
   }
 }
 
-function parseNamePricePair(value) {
+export function parseNamePricePair(value) {
   const raw = String(value ?? '').trim();
   if (!raw) return null;
   const parts = raw.split(',').map(s => s.trim());
@@ -148,7 +146,7 @@ function parseNamePricePair(value) {
   return { label, price: price ?? 0 };
 }
 
-function parseExtraUnitValue(row) {
+export function parseExtraUnitValue(row) {
   for (const key of Object.keys(row || {})) {
     if (normText(key) === 'extraunitat') {
       return row[key];
@@ -157,7 +155,7 @@ function parseExtraUnitValue(row) {
   return '';
 }
 
-function parseExtraExtresValue(row) {
+export function parseExtraExtresValue(row) {
   const rawValue = pickColumn(row, SPREADSHEET_COLUMNS.extraExtresKind);
   const swValue =
     pickColumn(row, SPREADSHEET_COLUMNS.extraSwitch) ??
@@ -260,7 +258,7 @@ function parseExtraExtresValue(row) {
   return [...parsePairs(raw), ...parseSwitch(sw)];
 }
 
-function parseVenueIds(value) {
+export function parseVenueIds(value) {
   const raw = String(value ?? '').trim();
   if (!raw) return [];
   const normalizedRaw = normText(raw);

@@ -1,4 +1,10 @@
-﻿function SummaryPanel({ form, quote, extraOptions, lang = 'ca', mobileDrawer = false }) {
+import React from 'react';
+import { VENUES, MONTHS_CA } from '../data/constants.js';
+import { PDF_TEXT, PRICE_CONFIG } from '../data/config.js';
+import { eur } from '../lib/formatters.js';
+import { pdfHTML } from '../lib/pdfGenerator.js';
+
+export default function SummaryPanel({ form, quote, extraOptions, lang = 'ca', mobileDrawer = false }) {
   const venue = VENUES.find(v => v.id === form.venue);
   const t = PDF_TEXT[lang] || PDF_TEXT.ca;
   const months = t.months || MONTHS_CA;

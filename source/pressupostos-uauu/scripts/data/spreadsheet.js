@@ -1,7 +1,13 @@
-// ================================================================
-//  SPREADSHEET LOADING & PROCESSING
-//  Parsing extras from spreadsheet, building venue configurations
-// ================================================================
+import * as XLSX from 'xlsx';
+import { VENUES, SPREADSHEET_COLUMNS, SPREADSHEET_URL } from './constants.js';
+import { normText, parseMoney, parseBool, parseYearCell, parseUnitStyle, buildServiceId } from './utils.js';
+import {
+  pickColumn, pickColumnStrict, pickColumnExcluding, pickColumnExcludingStrict,
+  pickColumnLoose, pickColumnLooseExcluding, pickColumnRegexExcluding,
+  parseServiceNames, parseJsonOptions, parseNamePricePair,
+  parseExtraUnitValue, parseExtraExtresValue, parseVenueIds, wantsDropdown,
+} from './parsers.js';
+import { PRICE_CONFIG } from './config.js';
 
 function buildExtrasByVenue(rows) {
   const extrasByVenue = {};
@@ -225,13 +231,13 @@ function parseMonths(monthCell) {
     'gener': 1, 'january': 1, 'enero': 1, '1': 1,
     'febrer': 2, 'february': 2, 'febrero': 2, '2': 2,
     'març': 3, 'march': 3, 'marzo': 3, '3': 3,
-    'abril': 4, 'april': 4, 'abril': 4, '4': 4,
+    'abril': 4, 'april': 4, '4': 4,
     'maig': 5, 'may': 5, 'mayo': 5, '5': 5,
     'juny': 6, 'june': 6, 'junio': 6, '6': 6,
     'juliol': 7, 'july': 7, 'julio': 7, '7': 7,
     'agost': 8, 'august': 8, 'agosto': 8, '8': 8,
-    'setembre': 9, 'september': 9, 'setembre': 9, 'septiembre': 9, '9': 9,
-    'octubre': 10, 'october': 10, 'octubre': 10, '10': 10,
+    'setembre': 9, 'september': 9, 'septiembre': 9, '9': 9,
+    'octubre': 10, 'october': 10, '10': 10,
     'novembre': 11, 'november': 11, 'noviembre': 11, '11': 11,
     'desembre': 12, 'december': 12, 'diciembre': 12, '12': 12,
   };
@@ -419,12 +425,9 @@ function sheetRowsWithHeaders(sheet) {
 
 function loadPriceRowsFromWorkbook(workbook) {
   if (!workbook || !workbook.SheetNames) return [];
-
   const sheetName = workbook.SheetNames.find(name => normText(name) === normText('PreusMenu'));
   if (!sheetName) return [];
-
-  const sheet = workbook.Sheets[sheetName];
-  return sheetRowsWithHeaders(sheet);
+  return sheetRowsWithHeaders(workbook.Sheets[sheetName]);
 }
 
 function loadBarLliureRowsFromWorkbook(workbook) {
@@ -435,13 +438,10 @@ function loadBarLliureRowsFromWorkbook(workbook) {
   for (const name of workbook.SheetNames) {
     const rows = sheetRowsWithHeaders(workbook.Sheets[name]);
     if (!rows.length) continue;
-
     const keys = Object.keys(rows[0] || {}).map(normText);
-
     const hasBarHeaders = requiredKeys.every(req =>
       keys.some(k => k.includes(req) || req.includes(k))
     );
-
     if (hasBarHeaders) return rows;
   }
   return [];
@@ -459,42 +459,16 @@ async function loadPricesFromSpreadsheet(workbook) {
 function applyPriceMatrixToConfig(priceMatrixByVenue) {
   for (const venue of VENUES) {
     if (!PRICE_CONFIG.venues[venue.id]) continue;
-    
     const venueMatrix = priceMatrixByVenue[venue.id];
-    if (!venueMatrix) {
-       continue;
-    }
-    
+    if (!venueMatrix) continue;
     PRICE_CONFIG.venues[venue.id].priceMatrix = venueMatrix;
   }
 }
 
-function applyBarLliureToConfig(barByVenue) {
-  for (const venueId in barByVenue) {
-    const targetVenueId = idMap[normText(venueId)] || venueId;
-    
-    if (!PRICE_CONFIG.venues[targetVenueId]) continue;
-
-    const venueRows = barByVenue[venueId];
-    for (const year in venueRows) {
-      if (!PRICE_CONFIG.venues[targetVenueId].extras[year]) {
-        PRICE_CONFIG.venues[targetVenueId].extras[year] = [];
-      }
-
-      PRICE_CONFIG.venues[targetVenueId].extras[year] = [
-        ...PRICE_CONFIG.venues[targetVenueId].extras[year].filter(e => e.id !== 'barlliure'),
-        { id: 'barlliure', ...venueRows[year][0] }
-      ];
-    }
-  }
-}
-
-async function loadExtrasFromSpreadsheet() {
-  if (typeof window === 'undefined' || typeof fetch !== 'function') return {};
-  
+export async function loadExtrasFromSpreadsheet() {
   const response = await fetch(SPREADSHEET_URL, { cache: 'no-store' });
   if (!response.ok) throw new Error(`Spreadsheet fetch failed: ${response.status}`);
-  
+
   const buffer = await response.arrayBuffer();
   const workbook = XLSX.read(buffer, { type: 'array' });
 
@@ -513,24 +487,20 @@ async function loadExtrasFromSpreadsheet() {
     for (const year in barData[venueId]) {
       if (!extrasByVenue[venueId]) extrasByVenue[venueId] = {};
       if (!extrasByVenue[venueId][year]) extrasByVenue[venueId][year] = [];
-      
       extrasByVenue[venueId][year].push({
         id: 'barlliure',
-        ...barData[venueId][year][0]
+        ...barData[venueId][year][0],
       });
     }
   }
 
   applySpreadsheetExtras(extrasByVenue);
-  
-
   return extrasByVenue;
 }
 
-function applySpreadsheetExtras(extrasByVenue) {
+export function applySpreadsheetExtras(extrasByVenue) {
   for (const venue of VENUES) {
     const venueExtras = extrasByVenue?.[venue.id] || {};
-    
     for (const year in venueExtras) {
       PRICE_CONFIG.venues[venue.id].extras[year] = venueExtras[year];
     }

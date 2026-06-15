@@ -1,22 +1,17 @@
-// ================================================================
-//  DATA CONSTANTS
-//  Calendar references, venues, spreadsheet columns, URLs
-// ================================================================
+export const MONTHS_CA = ['Gener', 'Febrer', 'Març', 'Abril', 'Maig', 'Juny', 'Juliol', 'Agost', 'Setembre', 'Octubre', 'Novembre', 'Desembre'];
+export const DAYS_CA = ['Diumenge', 'Dilluns', 'Dimarts', 'Dimecres', 'Dijous', 'Divendres', 'Dissabte'];
+export const DAYS_SHORT = ['Dg', 'Dl', 'Dm', 'Dc', 'Dj', 'Dv', 'Ds'];
 
-const MONTHS_CA = ['Gener', 'Febrer', 'Març', 'Abril', 'Maig', 'Juny', 'Juliol', 'Agost', 'Setembre', 'Octubre', 'Novembre', 'Desembre'];
-const DAYS_CA = ['Diumenge', 'Dilluns', 'Dimarts', 'Dimecres', 'Dijous', 'Divendres', 'Dissabte'];
-const DAYS_SHORT = ['Dg', 'Dl', 'Dm', 'Dc', 'Dj', 'Dv', 'Ds'];
+export const SPREADSHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTQJRPzbjDctU5oo8z1Q-ssJvgMiiCcFFICdBvlti5pYhUJW38GqDnNTMuzZMsN7pInxal1kBhNcLh3/pub?output=xlsx';
 
-const SPREADSHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTQJRPzbjDctU5oo8z1Q-ssJvgMiiCcFFICdBvlti5pYhUJW38GqDnNTMuzZMsN7pInxal1kBhNcLh3/pub?output=xlsx';
-
-const VENUES = [
+export const VENUES = [
   { id: 'mas-vivencs', name: 'Mas Vivencs', logo: 'assets/logo-mas-vivencs.png', type: 'Mas Rural' },
   { id: 'castell-de-tous', name: 'Castell de Tous', logo: 'assets/logo-castell-de-tous.png', type: 'Castell Històric' },
   { id: 'can-macia', name: 'Can Macià', logo: 'assets/logo-can-macia.png', type: 'Masia Rural' },
   { id: 'ca-nalzina', name: "Ca n'Alzina", logo: 'assets/logo-ca-nalzina.png', type: 'Masia Rural' },
 ];
 
-const SPREADSHEET_COLUMNS = {
+export const SPREADSHEET_COLUMNS = {
   name: ['nom servei', 'servei', 'nom'],
   nameCa: ['nom servei', 'nomca', 'nom cat', 'nomcatala', 'nom català', 'nom catala'],
   nameEs: ['nomcast', 'nom cast', 'nom castellà', 'nom castella', 'nomcastellano', 'nom castella'],

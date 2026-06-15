@@ -1,8 +1,11 @@
-﻿function escapeHtml(str) {
+import { PDF_TEXT, PRICE_CONFIG } from '../data/config.js';
+import { eur } from './formatters.js';
+
+export function escapeHtml(str) {
   return String(str ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
-function pdfHTML({ form, quote, venue, dateStr, coupleStr, refNum, today, lang = 'ca' }) {
+export function pdfHTML({ form, quote, venue, dateStr, coupleStr, refNum, today, lang = 'ca' }) {
   const t = PDF_TEXT[lang] || PDF_TEXT.ca;
   const vatPct = Math.round(PRICE_CONFIG.vatRate * 100);
   const linesRows = [
