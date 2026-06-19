@@ -151,8 +151,8 @@ export function computeQuote({ venue, date, guests, selectedExtras = {}, extraQu
       const thresholdFinal = Number(e.thresholdFinal);
       const thresholdPriceBelow = Number(e.thresholdPriceBelow ?? currentPrice ?? 0);
       const thresholdPriceAbove = Number(e.thresholdPriceAbove ?? 0);
-      const hasMain = Number.isFinite(thresholdMain);
-      const hasFinal = Number.isFinite(thresholdFinal);
+      const hasMain = Number.isFinite(thresholdMain) && thresholdMain > 0;
+      const hasFinal = Number.isFinite(thresholdFinal) && thresholdFinal > 0;
 
       if (hasMain && guests < thresholdMain) {
         computedPrice = Number.isFinite(thresholdPriceBelow) ? thresholdPriceBelow : 0;

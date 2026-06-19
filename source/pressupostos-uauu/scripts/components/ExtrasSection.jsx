@@ -213,8 +213,8 @@ export default function ExtrasSection({
           const thresholdFinal = Number(e.thresholdFinal);
           const thresholdPriceBelow = Number(e.thresholdPriceBelow ?? currentPrice ?? 0);
           const thresholdPriceAbove = Number(e.thresholdPriceAbove ?? 0);
-          const hasMain = Number.isFinite(thresholdMain);
-          const hasFinal = Number.isFinite(thresholdFinal);
+          const hasMain = Number.isFinite(thresholdMain) && thresholdMain > 0;
+          const hasFinal = Number.isFinite(thresholdFinal) && thresholdFinal > 0;
           if (hasMain && guests < thresholdMain) {
             currentPrice = Number.isFinite(thresholdPriceBelow) ? thresholdPriceBelow : 0;
             llindaDetail = `Menys de ${thresholdMain}: ${eur(currentPrice)}`;
@@ -234,7 +234,7 @@ export default function ExtrasSection({
           : hasQuantityInput
             ? `${eur(currentPrice)}/${quantityUnitLabel(e)} + IVA`
             : isLlinda
-              ? `${eur(currentPrice)} + IVA (llinda)`
+              ? `${eur(currentPrice)} + IVA`
               : e.pricePerPerson
                 ? `${eur(e.pricePerPerson)}/pers. (mínim ${eur(e.minPrice)}) + IVA`
                 : `${eur(currentPrice)} + IVA`;

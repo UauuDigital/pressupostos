@@ -170,20 +170,6 @@ export default function App() {
               </div>
             </div>
             <DateInfoStrip venueId={form.venue} date={form.date} />
-            {barLliureExtra && (
-                <div style={{ display: 'flex', gap: '20px', alignItems: 'center', flexWrap: 'wrap' }}>
-                  <div className="field" style={{ flex: 1 }}>
-                    <br></br>
-                    <label>Barra lliure</label>
-                    <div className="event-extra-price" style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-                      <span>2 hores incloses al menú</span>
-                      <input className="extra-quantity-input" type="number" min={0} max={3} step={0.5} value={form.extraOptions?.barlliure?.hours ?? 0} onChange={e => setExtraOption('barlliure', 'hours', Math.max(0, Math.min(3, Number(e.target.value) || 0)))} aria-label="Hores extres barra lliure" />
-                      <span className="extra-quantity-unit">hores extres</span>
-                      <button type="button" className={`toggle-btn ${(form.extraOptions?.barlliure?.premium ?? false) ? 'active' : ''}`} onClick={() => setExtraOption('barlliure', 'premium', !(form.extraOptions?.barlliure?.premium ?? false))}>Premium</button>
-                    </div>
-                  </div>
-                </div>
-              )}
           </div>
 
           <ExtrasSection
@@ -200,6 +186,22 @@ export default function App() {
             onOptionChange={setExtraOption}
             onVariantChange={setVariant}
           />
+
+          {barLliureExtra && (
+            <div className="form-section">
+              <div className="section-title">Barra lliure</div>
+              <div style={{ display: 'flex', gap: '20px', alignItems: 'center', flexWrap: 'wrap' }}>
+                <div className="field" style={{ flex: 1 }}>
+                  <div className="event-extra-price" style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                    <span>2 hores incloses al menú</span>
+                    <input className="extra-quantity-input" type="number" min={0} max={3} step={0.5} value={form.extraOptions?.barlliure?.hours ?? 0} onChange={e => setExtraOption('barlliure', 'hours', Math.max(0, Math.min(3, Number(e.target.value) || 0)))} aria-label="Hores extres barra lliure" />
+                    <span className="extra-quantity-unit">hores extres</span>
+                    <button type="button" className={`toggle-btn ${(form.extraOptions?.barlliure?.premium ?? false) ? 'active' : ''}`} onClick={() => setExtraOption('barlliure', 'premium', !(form.extraOptions?.barlliure?.premium ?? false))}>Premium</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
           <div className="form-section">
             <div className="section-title">Dades de la parella</div>
