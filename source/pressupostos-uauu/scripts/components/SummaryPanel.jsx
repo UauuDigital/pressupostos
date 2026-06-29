@@ -19,11 +19,14 @@ export default function SummaryPanel({ form, quote, extraOptions, lang = 'ca', m
       : String(Math.floor(Math.random() * 9000) + 1000);
     const refNum = `UAUU-${new Date().getFullYear()}-${randPart}`;
     const today = t.dateFormat(new Date(), months);
-    const w = window.open('', '_blank');
-    w.document.write(pdfHTML({ form, quote, venue, dateStr, coupleStr, refNum, today, lang }));
-    w.document.close();
-    w.focus();
-    setTimeout(() => w.print(), 300);
+    const html = pdfHTML({ form, quote, venue, dateStr, coupleStr, refNum, today, lang });
+    const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const w = window.open(url, '_blank');
+    if (w) {
+      w.focus();
+      setTimeout(() => { w.print(); URL.revokeObjectURL(url); }, 800);
+    }
   }
 
   return (
@@ -44,6 +47,7 @@ export default function SummaryPanel({ form, quote, extraOptions, lang = 'ca', m
             <div className="line-item">
               <div className="li-left">
                 <div className="li-label">{t.menuService}</div>
+                <div className="li-detail">{t.menuDetail(form.guests, quote.pricePerPerson)}</div>
               </div>
               <div className="li-amount">{eur(quote.menuBase)}</div>
             </div>
@@ -52,7 +56,7 @@ export default function SummaryPanel({ form, quote, extraOptions, lang = 'ca', m
               <div className="line-item" style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid var(--color-divider)' }}>
                 <div className="li-left">
                   <div className="li-label">{t.minSupplement}</div>
-                  <div className="li-detail">{`${quote.guests ?? form.guests} pers. × ${eur(quote.minimumPenaltyPerPerson)} (per sota del mínim ${quote.minGuests})`}</div>
+                  <div className="li-detail">{`${quote.shortfall} pers. × ${eur(quote.minimumPenaltyPerPerson)} (per sota del mínim ${quote.minGuests})`}</div>
                 </div>
                 <div className="li-amount">{eur(quote.penaltyAmt)}</div>
               </div>
