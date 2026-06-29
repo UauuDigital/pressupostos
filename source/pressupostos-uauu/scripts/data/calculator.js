@@ -58,7 +58,7 @@ export function computeQuote({ venue, date, guests, selectedExtras = {}, extraQu
 
   const menuBase = slot.price * guests;
   const shortfall = Math.max(0, slot.minGuests - guests);
-  const penaltyAmt = shortfall > 0 ? guests * minimumPenaltyPerPerson : 0;
+  const penaltyAmt = shortfall > 0 ? shortfall * minimumPenaltyPerPerson : 0;
 
   const allExtras = getExtras(venue, year);
 
