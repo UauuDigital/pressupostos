@@ -52,7 +52,7 @@ export default function ExtrasSection({
   }, [optionalExtras, dow, month]);
   if (!venueId || !year || !extras.length) return null;
 
-  function parseOptionalSelectionValue(value) {
+  function parseOptionalSelectionValue(value, { allowPartial = true } = {}) {
     const raw = String(value || '').trim();
     if (!raw) return null;
 
@@ -62,6 +62,8 @@ export default function ExtrasSection({
 
     const exactBaseMatches = optionalOptions.filter(o => o.baseLabel.toLowerCase() === normalized);
     if (exactBaseMatches.length >= 1) return exactBaseMatches[0].extra;
+
+    if (!allowPartial) return null;
 
     const partialMatches = optionalOptions.filter(o =>
       o.displayLabel.toLowerCase().includes(normalized) || o.baseLabel.toLowerCase().includes(normalized)
@@ -142,7 +144,7 @@ export default function ExtrasSection({
             onChange={(ev) => {
               const val = ev.target.value;
               setOptionalSelection(val);
-              const match = parseOptionalSelectionValue(val);
+              const match = parseOptionalSelectionValue(val, { allowPartial: false });
               if (match) {
                 handleOptionalSelect(match.id);
                 setOptionalSelection('');
