@@ -884,6 +884,16 @@ input[type="range"]::-webkit-slider-thumb {
   box-shadow: none;
 }
 
+.whatsapp-share-btn {
+  background: var(--color-sand);
+  color: var(--fg-on-sand);
+}
+
+.whatsapp-share-btn:hover {
+  background: var(--color-sand-light);
+  color: var(--color-ink);
+}
+
 .variant-select {
   width: 100%;
   padding: 8px 12px;

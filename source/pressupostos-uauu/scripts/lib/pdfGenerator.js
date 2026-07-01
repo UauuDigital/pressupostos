@@ -1,3 +1,5 @@
+import html2canvas from 'html2canvas';
+import { jsPDF } from 'jspdf';
 import { PDF_TEXT, PRICE_CONFIG } from '../data/config.js';
 import { eur } from './formatters.js';
 
@@ -85,4 +87,32 @@ th:last-child{text-align:right}
     <div class="footer-r">${t.footerNote}</div>
   </div>
 </div></body></html>`;
+}
+
+export async function generateQuotePdfBlob(html) {
+  const iframe = document.createElement('iframe');
+  iframe.style.position = 'fixed';
+  iframe.style.left = '-10000px';
+  iframe.style.top = '0';
+  iframe.style.width = '794px';
+  iframe.style.border = '0';
+  document.body.appendChild(iframe);
+
+  try {
+    await new Promise(resolve => {
+      iframe.onload = resolve;
+      iframe.srcdoc = html;
+    });
+    await new Promise(resolve => setTimeout(resolve, 400));
+
+    const doc = iframe.contentDocument;
+    const target = doc.querySelector('.wrap') || doc.body;
+    const canvas = await html2canvas(target, { scale: 1.5, backgroundColor: '#ffffff', useCORS: true });
+
+    const pdf = new jsPDF({ unit: 'px', format: [canvas.width, canvas.height], compress: true });
+    pdf.addImage(canvas.toDataURL('image/jpeg', 0.85), 'JPEG', 0, 0, canvas.width, canvas.height);
+    return pdf.output('blob');
+  } finally {
+    document.body.removeChild(iframe);
+  }
 }

@@ -2,7 +2,7 @@ import React from 'react';
 import { VENUES, MONTHS_CA } from '../data/constants.js';
 import { PDF_TEXT, PRICE_CONFIG } from '../data/config.js';
 import { eur } from '../lib/formatters.js';
-import { pdfHTML } from '../lib/pdfGenerator.js';
+import { pdfHTML, generateQuotePdfBlob } from '../lib/pdfGenerator.js';
 
 export default function SummaryPanel({ form, quote, extraOptions, lang = 'ca', mobileDrawer = false }) {
   const venue = VENUES.find(v => v.id === form.venue);
@@ -11,8 +11,10 @@ export default function SummaryPanel({ form, quote, extraOptions, lang = 'ca', m
   const dateObj = form.date ? new Date(form.date + 'T12:00:00') : null;
   const dateStr = dateObj ? t.dateFormat(dateObj, months) : null;
   const ready = form.venue && form.date && form.guests >= 1 && quote;
+  const [sharing, setSharing] = React.useState(false);
+  const canShareFiles = typeof navigator !== 'undefined' && !!navigator.share;
 
-  function handleExport() {
+  function buildPdfContext() {
     const coupleStr = form.coupleName || t.coupleLabel;
     const randPart = typeof crypto !== 'undefined' && crypto.getRandomValues
       ? String(crypto.getRandomValues(new Uint16Array(1))[0]).padStart(5, '0').slice(-4)
@@ -20,12 +22,37 @@ export default function SummaryPanel({ form, quote, extraOptions, lang = 'ca', m
     const refNum = `UAUU-${new Date().getFullYear()}-${randPart}`;
     const today = t.dateFormat(new Date(), months);
     const html = pdfHTML({ form, quote, venue, dateStr, coupleStr, refNum, today, lang });
+    return { html, refNum, coupleStr };
+  }
+
+  function handleExport() {
+    const { html } = buildPdfContext();
     const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const w = window.open(url, '_blank');
     if (w) {
       w.focus();
       setTimeout(() => { w.print(); URL.revokeObjectURL(url); }, 800);
+    }
+  }
+
+  async function handleShareWhatsApp() {
+    if (sharing) return;
+    setSharing(true);
+    try {
+      const { html, refNum, coupleStr } = buildPdfContext();
+      const pdfBlob = await generateQuotePdfBlob(html);
+      const file = new File([pdfBlob], `pressupost-uauu-${refNum}.pdf`, { type: 'application/pdf' });
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({ files: [file], title: 'Pressupost UAUU', text: `Pressupost UAUU — ${coupleStr}` });
+      } else {
+        const url = URL.createObjectURL(pdfBlob);
+        window.open(url, '_blank');
+      }
+    } catch (err) {
+      if (err?.name !== 'AbortError') console.error(err);
+    } finally {
+      setSharing(false);
     }
   }
 
@@ -115,8 +142,22 @@ export default function SummaryPanel({ form, quote, extraOptions, lang = 'ca', m
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" />
             </svg>
-            Exportar PDF
+            Imprimir
           </button>
+          {canShareFiles && (
+            <button
+              className={`export-btn whatsapp-share-btn${mobileDrawer ? ' mobile-summary-export-btn' : ''}`}
+              onClick={handleShareWhatsApp}
+              disabled={sharing}
+              style={{ marginTop: 10 }}
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" />
+                <line x1="8.6" y1="10.5" x2="15.4" y2="6.5" /><line x1="8.6" y1="13.5" x2="15.4" y2="17.5" />
+              </svg>
+              {sharing ? 'Preparant...' : 'Enviar'}
+            </button>
+          )}
         </>
       )}
     </div>
