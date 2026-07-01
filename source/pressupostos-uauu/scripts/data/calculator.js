@@ -142,6 +142,10 @@ export function computeQuote({ venue, date, guests, selectedExtras = {}, extraQu
       computedPrice = Math.max(guests * e.pricePerPerson, e.minPrice || 0);
       priceDetail = `${guests} pers. × ${eur(e.pricePerPerson)} (mínim ${eur(e.minPrice)})`;
 
+    } else if (e.perGuest) {
+      computedPrice = guests * currentPrice;
+      priceDetail = `${guests} convidats${variantSuffix} × ${eur(currentPrice)}`;
+
     } else {
       computedPrice = currentPrice;
     }

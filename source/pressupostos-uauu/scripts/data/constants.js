@@ -21,6 +21,7 @@ export const SPREADSHEET_COLUMNS = {
   price: ['PREU/P'],
   unit: ['estil d\'unitat', 'unitat', 'unit style'],
   quantity: ['quantityBased'],
+  perGuest: ['preu per convidat', 'per convidat', 'perconvidat', 'preu segons convidats', 'segons convidats', 'x convidats', 'preu x convidat'],
   optional: ['si es opcional', 'opcional', 'optional'],
   extraType: ['extres', 'extra type', 'tipus extres', 'tipus'],
   dropdown: ['desplegable', 'opcions desplegable', 'opciones desplegable'],

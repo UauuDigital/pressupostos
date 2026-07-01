@@ -21,6 +21,7 @@ function buildExtrasByVenue(rows) {
     const priceCell = pickColumn(row, SPREADSHEET_COLUMNS.price);
     const unitCell = pickColumn(row, SPREADSHEET_COLUMNS.unit);
     const quantityCell = pickColumn(row, SPREADSHEET_COLUMNS.quantity) ?? pickColumnLoose(row, ['quantity', 'based']);
+    const perGuestCell = pickColumnStrict(row, SPREADSHEET_COLUMNS.perGuest);
     const optionalCell = pickColumn(row, SPREADSHEET_COLUMNS.optional);
     const extraTypeCell = pickColumnStrict(row, SPREADSHEET_COLUMNS.extraType);
     const dropdownCell = pickColumn(row, SPREADSHEET_COLUMNS.dropdown);
@@ -61,6 +62,7 @@ function buildExtrasByVenue(rows) {
 
     const id = buildServiceId(labels.ca || labels.es || labels.en, index);
     const quantityBased = parseBool(quantityCell, false) || ['quantity', 'quantitat', 'quantitat?', 'q', 'qty', 'quantitybased', 'yes', 'true', 'verdadero', 'vrai', 'si', 'sí'].includes(normText(quantityCell));
+    const perGuest = parseBool(perGuestCell, false);
     const optional = parseBool(optionalCell, true);
     const unit = parseUnitStyle(unitCell);
     const dropdownOptions = parseJsonOptions(dropdownCell);
@@ -71,7 +73,7 @@ function buildExtrasByVenue(rows) {
     const thresholdFinal = parseMoney(thresholdFinalCell);
     const thresholdPriceBelow = parseMoney(thresholdPriceBelowCell);
     const thresholdPriceAbove = parseMoney(thresholdPriceAboveCell);
-    const signature = `${id}|${year}|${venueIds.slice().sort().join(',')}|${quantityBased ? 1 : 0}|${optional ? 1 : 0}|${unit}|${price ?? ''}|${extraListType ?? ''}|${dropdownOptions.map(o => `${o.label}:${o.price}`).join(',')}|${extraExtresOptions.map(o => `${o.label}:${o.price}`).join(',')}|${thresholdMain ?? ''}|${thresholdFinal ?? ''}|${thresholdPriceBelow ?? ''}|${thresholdPriceAbove ?? ''}`;
+    const signature = `${id}|${year}|${venueIds.slice().sort().join(',')}|${quantityBased ? 1 : 0}|${perGuest ? 1 : 0}|${optional ? 1 : 0}|${unit}|${price ?? ''}|${extraListType ?? ''}|${dropdownOptions.map(o => `${o.label}:${o.price}`).join(',')}|${extraExtresOptions.map(o => `${o.label}:${o.price}`).join(',')}|${thresholdMain ?? ''}|${thresholdFinal ?? ''}|${thresholdPriceBelow ?? ''}|${thresholdPriceAbove ?? ''}`;
     if (seen.has(signature)) return;
     seen.add(signature);
 
@@ -121,6 +123,9 @@ function buildExtrasByVenue(rows) {
       extra.unit = unit;
     } else if (unitCell) {
       extra.unit = unit;
+    }
+    if (perGuest) {
+      extra.perGuest = true;
     }
 
     for (const venueId of venueIds) {

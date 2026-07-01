@@ -233,11 +233,13 @@ export default function ExtrasSection({
           ? `${eur(switchCurrentPrice)} + IVA`
           : hasQuantityInput
             ? `${eur(currentPrice)}/${quantityUnitLabel(e)} + IVA`
-            : isLlinda
-              ? `${eur(currentPrice)} + IVA`
-              : e.pricePerPerson
-                ? `${eur(e.pricePerPerson)}/pers. (mínim ${eur(e.minPrice)}) + IVA`
-                : `${eur(currentPrice)} + IVA`;
+            : e.perGuest
+              ? `${guests} convidats × ${eur(currentPrice)} + IVA`
+              : isLlinda
+                ? `${eur(currentPrice)} + IVA`
+                : e.pricePerPerson
+                  ? `${eur(e.pricePerPerson)}/pers. (mínim ${eur(e.minPrice)}) + IVA`
+                  : `${eur(currentPrice)} + IVA`;
 
         const mandatoryLabel = condMandatory ? 'Obligatori (data sel.)' : 'Obligatori';
 

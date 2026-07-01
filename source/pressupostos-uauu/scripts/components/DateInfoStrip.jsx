@@ -37,7 +37,7 @@ export default function DateInfoStrip({ venueId, date }) {
         </div>
         <div className="info-strip-item">
           <div className="info-strip-label">Mínim finca</div>
-          <div className="info-strip-value">{slot.minGuests} convidats</div>
+          <div className="info-strip-value">{slot.minGuests} convidats adults</div>
         </div>
       </div>
       {slot.year < year && (
