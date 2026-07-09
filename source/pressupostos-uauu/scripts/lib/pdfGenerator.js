@@ -66,6 +66,7 @@ th:last-child{text-align:right}
     <div><div class="meta-label">${t.coupleLabel}</div><div class="meta-val">${coupleStr}</div></div>
     <div><div class="meta-label">${t.dateLabel}</div><div class="meta-val-i">${dateStr || '—'}</div></div>
     <div><div class="meta-label">${t.venueLabel}</div><div class="meta-val">${venue?.name || '—'}</div></div>
+    <div><div class="meta-label">${t.formatLabel}</div><div class="meta-val">${escapeHtml(t.formatNames?.[form.format] || form.format || '—')}</div></div>
     <div><div class="meta-label">${t.guestsLabel}</div><div class="meta-val">${t.guestsUnit(form.guests)}</div></div>
   </div>
   <div class="tbl-label">${t.detailLabel}</div>

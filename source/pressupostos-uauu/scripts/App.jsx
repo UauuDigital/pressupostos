@@ -6,6 +6,7 @@ import { eur } from './lib/formatters.js';
 import VenueCards from './components/VenueCards.jsx';
 import DatePicker from './components/DatePicker.jsx';
 import GuestsControl from './components/GuestsControl.jsx';
+import Toggle from './components/Toggle.jsx';
 import DateInfoStrip from './components/DateInfoStrip.jsx';
 import ExtrasSection from './components/ExtrasSection.jsx';
 import SummaryPanel from './components/SummaryPanel.jsx';
@@ -35,6 +36,7 @@ export default function App() {
     } catch { }
     return {
       venue: '',
+      format: 'finca',
       date: '',
       guests: 80,
       selectedExtras: {},
@@ -84,10 +86,10 @@ export default function App() {
   const barLliureExtra = venueConfig?.extras?.[dateYear]?.find(e => e.id === 'barlliure') || null;
 
   React.useEffect(() => {
-    const extras = form.venue && dateYear ? getExtras(form.venue, dateYear) : [];
+    const extras = form.venue && dateYear ? getExtras(form.venue, dateYear, form.format) : [];
     const defaults = computeDefaultExtrasState(extras);
     setForm(f => ({ ...f, selectedExtras: defaults.selectedExtras, extraQuantities: defaults.extraQuantities }));
-  }, [form.venue, dateYear]);
+  }, [form.venue, dateYear, form.format]);
 
   const quote = React.useMemo(() => {
     try {
@@ -167,6 +169,18 @@ export default function App() {
       <div className="app-body">
         <div className="form-panel" ref={venueSectionRef}>
           <div className="form-section">
+            <div className="section-title">Format del casament</div>
+            <Toggle
+              value={form.format}
+              onChange={v => set('format', v)}
+              options={[
+                { value: 'finca', label: 'Finca' },
+                { value: 'coctel', label: 'Còctel' },
+              ]}
+            />
+          </div>
+
+          <div className="form-section">
             <div className="section-title">Finca de la boda</div>
             <VenueCards value={form.venue} onChange={v => set('venue', v)} />
           </div>
@@ -185,7 +199,7 @@ export default function App() {
                 <div className="range-labels"><span>10</span><span>400</span></div>
               </div>
             </div>
-            <DateInfoStrip venueId={form.venue} date={form.date} />
+            <DateInfoStrip venueId={form.venue} date={form.date} format={form.format} />
           </div>
 
           <ExtrasSection
@@ -193,6 +207,7 @@ export default function App() {
             year={dateYear}
             date={form.date}
             guests={form.guests}
+            format={form.format}
             selectedExtras={form.selectedExtras}
             extraQuantities={form.extraQuantities}
             extraOptions={form.extraOptions}

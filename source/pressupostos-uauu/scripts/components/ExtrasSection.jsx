@@ -8,6 +8,7 @@ export default function ExtrasSection({
   year,
   date,
   guests,
+  format = 'finca',
   selectedExtras,
   extraQuantities,
   extraOptions,
@@ -19,8 +20,8 @@ export default function ExtrasSection({
 }) {
   const [optionalSelection, setOptionalSelection] = React.useState('');
   const extras = React.useMemo(
-    () => (venueId && year ? getExtras(venueId, year).filter(e => e.id !== 'barlliure') : []),
-    [venueId, year]
+    () => (venueId && year ? getExtras(venueId, year, format).filter(e => e.id !== 'barlliure') : []),
+    [venueId, year, format]
   );
 
   function quantityUnitLabel(extra) {

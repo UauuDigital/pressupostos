@@ -59,6 +59,7 @@ export default function SummaryPanel({ form, quote, extraOptions, lang = 'ca', m
   return (
     <div className="summary-panel">
       <div className="summary-venue-name">{venue ? venue.name : <span style={{ opacity: 0 }}>—</span>}</div>
+      {venue && <div className="li-detail">{t.formatLabel}: {t.formatNames?.[form.format] || form.format}</div>}
       <div className="s-label">{t.dateLabel}</div>
       <div className="s-date">{dateStr || <span style={{ color: 'var(--color-muted)' }}>— pendent —</span>}</div>
 
