@@ -1,6 +1,7 @@
 import React from 'react';
 import { PRICE_CONFIG } from './data/config.js';
-import { computeQuote } from './data/calculator.js';
+import { computeQuote, getExtras } from './data/calculator.js';
+import { normText } from './data/utils.js';
 import { eur } from './lib/formatters.js';
 import VenueCards from './components/VenueCards.jsx';
 import DatePicker from './components/DatePicker.jsx';
@@ -8,6 +9,24 @@ import GuestsControl from './components/GuestsControl.jsx';
 import DateInfoStrip from './components/DateInfoStrip.jsx';
 import ExtrasSection from './components/ExtrasSection.jsx';
 import SummaryPanel from './components/SummaryPanel.jsx';
+
+const DEFAULT_SELECTED_EXTRA_LABELS = ['cerimonia', 'allotjament', 'menu infantil'];
+
+function computeDefaultExtrasState(extras) {
+  const selectedExtras = {};
+  const extraQuantities = {};
+  for (const extra of extras) {
+    if (!extra.optional) continue;
+    const label = normText(extra.label);
+    if (!DEFAULT_SELECTED_EXTRA_LABELS.some(target => label.includes(target))) continue;
+    if (extra.quantityBased) {
+      extraQuantities[extra.id] = Math.max(1, Number(extra.minQuantity ?? 1));
+    } else {
+      selectedExtras[extra.id] = true;
+    }
+  }
+  return { selectedExtras, extraQuantities };
+}
 
 export default function App() {
   const [form, setForm] = React.useState(() => {
@@ -64,13 +83,10 @@ export default function App() {
 
   const barLliureExtra = venueConfig?.extras?.[dateYear]?.find(e => e.id === 'barlliure') || null;
 
-  const hasMountedRef = React.useRef(false);
   React.useEffect(() => {
-    if (!hasMountedRef.current) {
-      hasMountedRef.current = true;
-      return;
-    }
-    setForm(f => ({ ...f, selectedExtras: {}, extraQuantities: {} }));
+    const extras = form.venue && dateYear ? getExtras(form.venue, dateYear) : [];
+    const defaults = computeDefaultExtrasState(extras);
+    setForm(f => ({ ...f, selectedExtras: defaults.selectedExtras, extraQuantities: defaults.extraQuantities }));
   }, [form.venue, dateYear]);
 
   const quote = React.useMemo(() => {
