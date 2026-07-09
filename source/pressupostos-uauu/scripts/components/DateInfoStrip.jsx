@@ -4,12 +4,13 @@ import { PRICE_CONFIG } from '../data/config.js';
 import { DAYS_CA, MONTHS_CA, VENUES } from '../data/constants.js';
 import { eur } from '../lib/formatters.js';
 
-export default function DateInfoStrip({ venueId, date }) {
+export default function DateInfoStrip({ venueId, date, format = 'finca' }) {
   if (!venueId || !date) return null;
   const d = new Date(date + 'T12:00:00');
   const year = d.getFullYear(), month = d.getMonth() + 1, dow = d.getDay();
-  const slot = lookupPrice(venueId, year, month, dow);
-  const hasSpreadsheetPriceData = Object.keys(PRICE_CONFIG.venues[venueId]?.priceMatrix || {}).length > 0;
+  const slot = lookupPrice(venueId, year, month, dow, format);
+  const hasSpreadsheetPriceData = format === 'coctel'
+    || Object.keys(PRICE_CONFIG.venues[venueId]?.priceMatrix || {}).length > 0;
 
   if (!hasSpreadsheetPriceData) return (
     <div className="alert alert-info">Preus d'aquesta finca pendents de configurar.</div>
@@ -37,7 +38,7 @@ export default function DateInfoStrip({ venueId, date }) {
         </div>
         <div className="info-strip-item">
           <div className="info-strip-label">Mínim finca</div>
-          <div className="info-strip-value">{slot.minGuests} convidats adults</div>
+          <div className="info-strip-value">{slot.minGuests > 0 ? `${slot.minGuests} convidats adults` : 'Sense mínim'}</div>
         </div>
       </div>
       {slot.year < year && (

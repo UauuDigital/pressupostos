@@ -1,8 +1,10 @@
 import { PRICE_CONFIG } from './config.js';
 import { wantsDropdown, getOptionLabel } from './parsers.js';
+import { normText } from './utils.js';
 import { eur } from '../lib/formatters.js';
+import { COCTEL_VENUE_GROUP, COCTEL_PRICE_MATRIX, COCTEL_EXTRAS_BY_YEAR } from './coctelPricing.js';
 
-export function lookupPrice(venueId, year, month, dow) {
+function lookupFincaPrice(venueId, year, month, dow) {
   const v = PRICE_CONFIG.venues[venueId];
   if (!v || !v.priceMatrix) return null;
 
@@ -25,7 +27,37 @@ export function lookupPrice(venueId, year, month, dow) {
   return row ? { ...row, year: usedYear } : null;
 }
 
-export function getExtras(venueId, year) {
+function lookupCoctelPrice(venueId, year, month, dow) {
+  const groupId = COCTEL_VENUE_GROUP[venueId];
+  const matrix = groupId && COCTEL_PRICE_MATRIX[groupId];
+  if (!matrix) return null;
+
+  const years = Object.keys(matrix).map(Number).sort((a, b) => a - b);
+  if (!years.length) return null;
+
+  let usedYear = years[0];
+  for (const y of years) {
+    if (y <= year) usedYear = y;
+  }
+
+  const dayMatrix = matrix[usedYear];
+  if (!dayMatrix || !dayMatrix[dow]) return null;
+
+  const matches = dayMatrix[dow].filter(r => r.months.includes(month));
+  if (!matches.length) return null;
+
+  const withPenalty = matches.find(r => Number.isFinite(Number(r.minimumPenaltyPerPerson)));
+  const row = withPenalty || matches[0];
+  return row ? { ...row, year: usedYear } : null;
+}
+
+export function lookupPrice(venueId, year, month, dow, format = 'finca') {
+  return format === 'coctel'
+    ? lookupCoctelPrice(venueId, year, month, dow)
+    : lookupFincaPrice(venueId, year, month, dow);
+}
+
+function getFincaExtras(venueId, year) {
   const v = PRICE_CONFIG.venues[venueId];
   if (!v || !v.extras) return [];
 
@@ -40,16 +72,40 @@ export function getExtras(venueId, year) {
   return v.extras[usedYear] || [];
 }
 
+function getCoctelExtras(venueId, year) {
+  const years = Object.keys(COCTEL_EXTRAS_BY_YEAR).map(Number).sort((a, b) => a - b);
+  if (!years.length) return [];
+
+  let usedYear = years[0];
+  for (const y of years) {
+    if (y <= year) usedYear = y;
+  }
+
+  return (COCTEL_EXTRAS_BY_YEAR[usedYear] || []).filter(e => !e.venueIds || e.venueIds.includes(venueId));
+}
+
+export function getExtras(venueId, year, format = 'finca') {
+  if (format !== 'coctel') return getFincaExtras(venueId, year);
+
+  // En Còctel es mostren tots els serveis generals (masia/finca) i, a més, se sobreescriuen
+  // amb el preu propi del Còctel aquells que ja té documentats (menú infantil, menú de staff).
+  const coctelExtras = getCoctelExtras(venueId, year);
+  const coctelLabels = new Set(coctelExtras.map(e => normText(e.label)));
+  const generalExtras = getFincaExtras(venueId, year).filter(e => !coctelLabels.has(normText(e.label)));
+
+  return [...generalExtras, ...coctelExtras];
+}
+
 export function getExtraLabel(extra, lang = 'ca') {
   return String(extra?.labels?.[lang] || extra?.labels?.ca || extra?.label || '').trim();
 }
 
-export function computeQuote({ venue, date, guests, selectedExtras = {}, extraQuantities, extraOptions = {}, extraVariants = {}, lang = 'ca' }) {
+export function computeQuote({ venue, date, guests, format = 'finca', selectedExtras = {}, extraQuantities, extraOptions = {}, extraVariants = {}, lang = 'ca' }) {
   if (!venue || !date || guests < 1) return null;
 
   const d = new Date(date + 'T12:00:00');
   const year = d.getFullYear(), month = d.getMonth() + 1, dow = d.getDay();
-  const slot = lookupPrice(venue, year, month, dow);
+  const slot = lookupPrice(venue, year, month, dow, format);
   if (!slot) return null;
 
   const minimumPenaltyPerPerson = Number.isFinite(Number(slot.minimumPenaltyPerPerson))
@@ -60,7 +116,7 @@ export function computeQuote({ venue, date, guests, selectedExtras = {}, extraQu
   const shortfall = Math.max(0, slot.minGuests - guests);
   const penaltyAmt = shortfall > 0 ? shortfall * minimumPenaltyPerPerson : 0;
 
-  const allExtras = getExtras(venue, year);
+  const allExtras = getExtras(venue, year, format);
 
   const quantities = extraQuantities || {};
   const options = extraOptions || {};
@@ -178,6 +234,7 @@ export function computeQuote({ venue, date, guests, selectedExtras = {}, extraQu
   const total = subtotal + vat;
 
   return {
+    format,
     year, month, dow, usedYear: slot.year,
     pricePerPerson: slot.price,
     minGuests: slot.minGuests,
