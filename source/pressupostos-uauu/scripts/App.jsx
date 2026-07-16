@@ -22,6 +22,7 @@ function computeDefaultExtrasState(extras) {
     if (!DEFAULT_SELECTED_EXTRA_LABELS.some(target => label.includes(target))) continue;
     if (extra.quantityBased) {
       extraQuantities[extra.id] = Math.max(1, Number(extra.minQuantity ?? 1));
+      selectedExtras[extra.id] = true;
     } else {
       selectedExtras[extra.id] = true;
     }

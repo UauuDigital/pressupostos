@@ -82,6 +82,7 @@ export default function ExtrasSection({
 
   function isExtraSelected(extra) {
     if (extra.quantityBased) {
+      if (selectedExtras?.[extra.id] === true) return true;
       const quantity = extraQuantities?.[extra.id] ?? 0;
       return quantity > 0;
     }
@@ -107,6 +108,7 @@ export default function ExtrasSection({
         const minQuantity = Math.max(1, Number(extra.minQuantity ?? 1));
         const currentQuantity = Number(extraQuantities?.[extra.id] ?? 0);
         if (currentQuantity < minQuantity) onQuantityChange(extra.id, minQuantity);
+        onChange(extra.id, true);
       } else {
         onChange(extra.id, true);
       }
@@ -327,7 +329,7 @@ export default function ExtrasSection({
                       step={1}
                       inputMode="numeric"
                       placeholder="0"
-                      value={quantity}
+                      value={quantity ? quantity : ''}
                       onChange={ev => onQuantityChange(e.id, normalizeQuantity(ev.target.value))}
                       aria-label={quantityInputLabel(e)}
                       title={quantityInputLabel(e)}
@@ -344,8 +346,8 @@ export default function ExtrasSection({
                       step={1}
                       inputMode="numeric"
                       placeholder="0"
-                      value={opts.extraUnitQty ?? 0}
-                      onChange={ev => onOptionChange(e.id, 'extraUnitQty', Math.max(0, Math.round(Number(ev.target.value) || 0)))}
+                      value={opts.extraUnitQty ? opts.extraUnitQty : ''}
+                      onChange={ev => onOptionChange(e.id, 'extraUnitQty', normalizeQuantity(ev.target.value))}
                       aria-label={e.extraUnitPair?.label ? `Quants ${e.extraUnitPair.label}?` : 'Quantes unitats extra?'}
                       title={e.extraUnitPair?.label ? `Quants ${e.extraUnitPair.label}?` : 'Quantes unitats extra?'}
                     />
