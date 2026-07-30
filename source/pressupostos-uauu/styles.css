@@ -938,6 +938,20 @@ input[type="range"]::-webkit-slider-thumb {
   margin-top: 0;
 }
 
+.optional-services-mobile-only {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .optional-services-desktop-only {
+    display: none;
+  }
+
+  .optional-services-mobile-only {
+    display: block;
+  }
+}
+
 .optional-services-field .variant-select:hover {
   border-color: var(--color-sand);
 }

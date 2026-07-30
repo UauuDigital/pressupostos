@@ -98,10 +98,7 @@ export default function ExtrasSection({
     const isMandatory = !extra.optional || condMandatory;
     const alreadySelected = isExtraSelected(extra);
 
-    if (isMandatory) {
-      setOptionalSelection('');
-      return;
-    }
+    if (isMandatory) return;
 
     if (!alreadySelected) {
       if (extra.quantityBased) {
@@ -116,7 +113,6 @@ export default function ExtrasSection({
       if (extra.quantityBased) onQuantityChange(extra.id, 0);
       onChange(extra.id, false);
     }
-    setOptionalSelection('');
   }
 
   function deactivateOptionalExtra(extra) {
@@ -139,7 +135,7 @@ export default function ExtrasSection({
           <label htmlFor="optional-services-select">Afegir o treure servei opcional</label>
           <input
             id="optional-services-select"
-            className="variant-select optional-services-combobox"
+            className="variant-select optional-services-combobox optional-services-desktop-only"
             list="optional-services-list"
             type="text"
             placeholder="Selecciona o escriu un servei..."
@@ -177,6 +173,27 @@ export default function ExtrasSection({
               );
             })}
           </datalist>
+          <select
+            className="variant-select optional-services-combobox optional-services-mobile-only"
+            value=""
+            onChange={(ev) => {
+              const val = ev.target.value;
+              if (val) handleOptionalSelect(val);
+            }}
+            aria-label="Desplegable de serveis opcionals"
+          >
+            <option value="" disabled>
+              Selecciona un servei...
+            </option>
+            {optionalOptions.map(({ extra, displayLabel }) => {
+              const alreadySelected = isExtraSelected(extra);
+              return (
+                <option key={extra.id} value={extra.id}>
+                  {displayLabel} {alreadySelected ? '(seleccionat)' : ''}
+                </option>
+              );
+            })}
+          </select>
         </div>
       )}
       {visibleExtras.map(e => {
