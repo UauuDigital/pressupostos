@@ -129,7 +129,14 @@ export function computeQuote({ venue, date, guests, format = 'finca', selectedEx
     const condMandatory = e.mandatoryWhen ? e.mandatoryWhen(dow, month) : false;
     const isMandatory = !e.optional || (e.mandatoryWhen ? e.mandatoryWhen(dow, month) : false);
     const minQuantity = e.quantityBased ? (e.minQuantity ?? 0) : 0;
-    const included = isBarLliure || isMandatory || selectedExtras[e.id] === true || (e.quantityBased && quantity > 0);
+    const hasDropdownOptions = Array.isArray(e.dropdownOptions) && e.dropdownOptions.length > 0 && (e.extraType === 'desplegable' || wantsDropdown(e.extraListCell));
+    const dropdownSelections = extraOpts.dropdownSelections || {};
+    const markedDropdownOptions = hasDropdownOptions
+      ? e.dropdownOptions
+          .map(opt => ({ opt, qty: Math.max(0, Math.round(Number(dropdownSelections[opt.id] || 0))) }))
+          .filter(x => x.qty > 0)
+      : [];
+    const included = isBarLliure || isMandatory || selectedExtras[e.id] === true || (e.quantityBased && quantity > 0) || (hasDropdownOptions && markedDropdownOptions.length > 0);
     const hasQuantity = e.quantityBased ? quantity >= (e.minQuantity ?? 0) : true;
 
     let computedPrice = 0;
@@ -137,14 +144,14 @@ export function computeQuote({ venue, date, guests, format = 'finca', selectedEx
 
     let currentPrice = e.price || 0;
     let variantSuffix = '';
-    const hasDropdownOptions = Array.isArray(e.dropdownOptions) && e.dropdownOptions.length > 0 && (e.extraType === 'desplegable' || wantsDropdown(e.extraListCell));
-    const selectedDropdown = hasDropdownOptions
-      ? e.dropdownOptions.find(opt => opt.id === extraOpts.dropdownSelection) || e.dropdownOptions[0]
-      : null;
+    let dropdownDetail = null;
 
-    if (selectedDropdown) {
-      currentPrice = selectedDropdown.price;
-      variantSuffix = ` (${getOptionLabel(selectedDropdown, lang)})`;
+    if (hasDropdownOptions && markedDropdownOptions.length > 0) {
+      const dropdownTotal = markedDropdownOptions.reduce((sum, x) => sum + (x.qty * Number(x.opt.price || 0)), 0);
+      dropdownDetail = markedDropdownOptions
+        .map(x => `${x.qty}× ${getOptionLabel(x.opt, lang)} (${eur(x.opt.price)})`)
+        .join(' + ');
+      currentPrice = dropdownTotal;
     }
 
     if (e.variants && extraVariants && extraVariants[e.id]) {
@@ -223,6 +230,10 @@ export function computeQuote({ venue, date, guests, format = 'finca', selectedEx
         computedPrice = basePrice + (diffGuests * thresholdPriceAbove);
         priceDetail = `${eur(basePrice)} + (${diffGuests} × ${eur(thresholdPriceAbove)})`;
       }
+    }
+
+    if (hasDropdownOptions && dropdownDetail) {
+      priceDetail = priceDetail ? `${dropdownDetail} · ${priceDetail}` : dropdownDetail;
     }
 
     return { ...e, isMandatory, condMandatory, included: included && hasQuantity, computedPrice, priceDetail };
