@@ -2,6 +2,7 @@ import React from 'react';
 import { getExtras } from '../data/calculator.js';
 import { eur } from '../lib/formatters.js';
 import { normalizeQuantity } from '../utils/input.js';
+import DropdownQuantitySelect from './DropdownQuantitySelect.jsx';
 
 export default function ExtrasSection({
   venueId,
@@ -210,9 +211,14 @@ export default function ExtrasSection({
           : null;
         const hasSwitchOptions = !!switchOption;
         const hasDropdownOptions = e.extraType === 'desplegable' && Array.isArray(e.dropdownOptions) && e.dropdownOptions.length > 0;
-        const selectedDropdownOption = hasDropdownOptions
-          ? e.dropdownOptions.find(opt => opt.id === opts.dropdownSelection) || e.dropdownOptions[0]
-          : null;
+        const dropdownSelections = opts.dropdownSelections || {};
+        const markedDropdownOptions = hasDropdownOptions
+          ? e.dropdownOptions.filter(opt => Number(dropdownSelections[opt.id] || 0) > 0)
+          : [];
+        const dropdownTotal = markedDropdownOptions.reduce(
+          (sum, opt) => sum + (Number(dropdownSelections[opt.id] || 0) * Number(opt.price || 0)),
+          0
+        );
         const rawSwitchSelection = String(opts.switchSide ?? opts.extraSelection ?? '').trim().toLowerCase();
         const selectedSwitchSide = ['left', 'esquerra', 'a', '0'].includes(rawSwitchSelection) ? 'left' : 'right';
         const switchCurrentPrice = hasSwitchOptions
@@ -221,7 +227,7 @@ export default function ExtrasSection({
 
         const basePrice = Number(e.price || 0);
         let currentPrice = basePrice;
-        if (selectedDropdownOption) currentPrice = selectedDropdownOption.price;
+        if (hasDropdownOptions) currentPrice = dropdownTotal;
         const isLlinda = e.extraType === 'llinda';
         let llindaDetail = null;
         if (e.variants && extraVariants?.[e.id]) {
@@ -295,21 +301,21 @@ export default function ExtrasSection({
                 )}
               </div>
               {hasDropdownOptions && (
-                  <select
-                    className="variant-select"
-                    value={selectedDropdownOption?.id || ''}
-                    onChange={(ev) => {
-                      onOptionChange(e.id, 'dropdownSelection', ev.target.value);
-                      if (!isMandatory && !isSelected) onChange(e.id, true);
-                    }}
-                    style={{ marginLeft: '10px' }}
-                  >
-                    {e.dropdownOptions.map(opt => (
-                      <option key={opt.id} value={opt.id}>
-                        {(opt.labels?.ca || opt.label)} ({eur(opt.price)})
-                      </option>
-                    ))}
-                  </select>
+                <DropdownQuantitySelect
+                  options={e.dropdownOptions}
+                  selections={dropdownSelections}
+                  getLabel={opt => opt.labels?.ca || opt.label}
+                  getPrice={opt => opt.price}
+                  placeholder="Selecciona opcions..."
+                  ariaLabel={`Opcions de ${e.label}`}
+                  onChange={(optionId, quantity) => {
+                    const nextSelections = { ...dropdownSelections, [optionId]: quantity };
+                    onOptionChange(e.id, 'dropdownSelections', nextSelections);
+                    const anyMarked = Object.values(nextSelections).some(q => Number(q) > 0);
+                    if (!isMandatory && anyMarked && !isSelected) onChange(e.id, true);
+                    if (!isMandatory && !anyMarked && isSelected) onChange(e.id, false);
+                  }}
+                />
               )}
 
               {e.variants && (hasQuantityInput ? quantity > 0 : selectedExtras[e.id]) && (
