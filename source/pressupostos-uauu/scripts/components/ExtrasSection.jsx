@@ -313,7 +313,6 @@ export default function ExtrasSection({
                     onOptionChange(e.id, 'dropdownSelections', nextSelections);
                     const anyMarked = Object.values(nextSelections).some(q => Number(q) > 0);
                     if (!isMandatory && anyMarked && !isSelected) onChange(e.id, true);
-                    if (!isMandatory && !anyMarked && isSelected) onChange(e.id, false);
                   }}
                 />
               )}
