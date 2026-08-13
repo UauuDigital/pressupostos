@@ -491,7 +491,15 @@ export async function loadExtrasFromSpreadsheet() {
   for (const venueId in barData) {
     for (const year in barData[venueId]) {
       if (!extrasByVenue[venueId]) extrasByVenue[venueId] = {};
-      if (!extrasByVenue[venueId][year]) extrasByVenue[venueId][year] = [];
+      if (!extrasByVenue[venueId][year]) {
+        // Any nou creat només per la barra lliure: hereta els extres generals
+        // (desplegables, etc.) de l'any disponible més proper per sota, si n'hi ha.
+        const existingYears = Object.keys(extrasByVenue[venueId]).map(Number).filter(y => y <= Number(year)).sort((a, b) => a - b);
+        const fallbackYear = existingYears.length ? existingYears[existingYears.length - 1] : null;
+        extrasByVenue[venueId][year] = fallbackYear
+          ? extrasByVenue[venueId][fallbackYear].filter(e => e.id !== 'barlliure').map(e => ({ ...e }))
+          : [];
+      }
       extrasByVenue[venueId][year].push({
         id: 'barlliure',
         ...barData[venueId][year][0],
