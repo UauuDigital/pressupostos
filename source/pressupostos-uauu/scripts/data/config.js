@@ -8,18 +8,26 @@ export const PRICE_CONFIG = {
     'mas-vivencs': {
       priceMatrix: {},
       extras: { 2026: [], 2027: [] },
+      coctelPriceMatrix: {},
+      coctelExtras: {},
     },
     'castell-de-tous': {
       priceMatrix: {},
       extras: { 2026: [], 2027: [] },
+      coctelPriceMatrix: {},
+      coctelExtras: {},
     },
     'can-macia': {
       priceMatrix: {},
       extras: { 2026: [], 2027: [] },
+      coctelPriceMatrix: {},
+      coctelExtras: {},
     },
     'ca-nalzina': {
       priceMatrix: {},
       extras: { 2026: [], 2027: [] },
+      coctelPriceMatrix: {},
+      coctelExtras: {},
     },
   },
 };

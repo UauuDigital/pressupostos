@@ -7,16 +7,23 @@
 // ================================================================
 
 // Initialize spreadsheet loading when all modules are ready
-window.__uauuDataReady = loadExtrasFromSpreadsheet()
-  .then(extrasByVenue => {
-    applySpreadsheetExtras(extrasByVenue);
-    return extrasByVenue;
-  })
-  .catch(err => {
-    console.error('No s\'han pogut carregar els serveis des del full de càlcul:', err);
-    applySpreadsheetExtras({});
-    return {};
-  });
+window.__uauuDataReady = Promise.all([
+  loadExtrasFromSpreadsheet()
+    .then(extrasByVenue => {
+      applySpreadsheetExtras(extrasByVenue);
+      return extrasByVenue;
+    })
+    .catch(err => {
+      console.error('No s\'han pogut carregar els serveis des del full de càlcul:', err);
+      applySpreadsheetExtras({});
+      return {};
+    }),
+  loadCoctelDataFromSpreadsheet()
+    .catch(err => {
+      console.error('No s\'han pogut carregar les dades de Còctel des del full de càlcul:', err);
+      return {};
+    }),
+]).then(([extrasByVenue]) => extrasByVenue);
 
 // Export unified API
 window.uauuData = {
@@ -68,7 +75,8 @@ window.uauuData = {
   applyPriceMatrixToConfig,
   loadExtrasFromSpreadsheet,
   applySpreadsheetExtras,
-  
+  loadCoctelDataFromSpreadsheet,
+
   // Calculator
   lookupPrice,
   getExtras,

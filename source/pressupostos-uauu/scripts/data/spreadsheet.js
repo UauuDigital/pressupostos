@@ -1,5 +1,5 @@
 import * as XLSX from 'xlsx';
-import { VENUES, SPREADSHEET_COLUMNS, SPREADSHEET_URL } from './constants.js';
+import { VENUES, SPREADSHEET_COLUMNS, SPREADSHEET_URL, COCTEL_SPREADSHEET_URL } from './constants.js';
 import { normText, parseMoney, parseBool, parseYearCell, parseUnitStyle, buildServiceId } from './utils.js';
 import {
   pickColumn, pickColumnStrict, pickColumnExcluding, pickColumnExcludingStrict,
@@ -421,6 +421,150 @@ function buildPriceMatrixFromMenu(rows) {
   }
 
   return priceMatrixByVenue;
+}
+
+function buildCoctelPriceMatrixFromRows(rows) {
+  const priceMatrixByVenue = {};
+
+  for (const venue of VENUES) {
+    priceMatrixByVenue[venue.id] = {};
+  }
+
+  rows.forEach(row => {
+    const venueCell = pickColumn(row, SPREADSHEET_COLUMNS.venue);
+    const yearCell = pickColumn(row, SPREADSHEET_COLUMNS.year);
+    const priceCell = pickColumn(row, SPREADSHEET_COLUMNS.coctelPricePerPerson);
+    const minCell = pickColumn(row, SPREADSHEET_COLUMNS.coctelMinGuests);
+    const penaltyCell = pickColumn(row, SPREADSHEET_COLUMNS.coctelPenaltyPerPerson);
+    const dayCell = pickColumn(row, SPREADSHEET_COLUMNS.menuDays);
+    const monthCell = pickColumn(row, SPREADSHEET_COLUMNS.menuMonths);
+
+    if (!venueCell || !yearCell || !priceCell) return;
+
+    const venueIds = parseVenueIds(venueCell);
+    const year = parseYearCell(yearCell);
+    const price = parseMoney(priceCell);
+    const minGuests = Math.max(0, Number(minCell ?? 0));
+    const minimumPenaltyPerPerson = parseMoney(penaltyCell);
+    const days = parseDays(dayCell);
+    const months = parseMonths(monthCell);
+
+    if (!venueIds.length || !year || price === null || !days.length || !months.length) return;
+
+    for (const venueId of venueIds) {
+      if (!priceMatrixByVenue[venueId][year]) {
+        priceMatrixByVenue[venueId][year] = {};
+      }
+
+      for (const dayOfWeek of days) {
+        if (!priceMatrixByVenue[venueId][year][dayOfWeek]) {
+          priceMatrixByVenue[venueId][year][dayOfWeek] = [];
+        }
+
+        const entry = { months, price, minGuests };
+        if (minimumPenaltyPerPerson !== null) {
+          entry.minimumPenaltyPerPerson = minimumPenaltyPerPerson;
+        }
+
+        priceMatrixByVenue[venueId][year][dayOfWeek].push(entry);
+      }
+    }
+  });
+
+  for (const venueId of Object.keys(priceMatrixByVenue)) {
+    for (const year of Object.keys(priceMatrixByVenue[venueId])) {
+      for (const dayOfWeek of Object.keys(priceMatrixByVenue[venueId][year])) {
+        priceMatrixByVenue[venueId][year][dayOfWeek].sort((a, b) => {
+          const aHasPenalty = Number.isFinite(Number(a.minimumPenaltyPerPerson)) ? 1 : 0;
+          const bHasPenalty = Number.isFinite(Number(b.minimumPenaltyPerPerson)) ? 1 : 0;
+          if (aHasPenalty !== bHasPenalty) return bHasPenalty - aHasPenalty;
+          return (b.months?.length || 0) - (a.months?.length || 0);
+        });
+      }
+    }
+  }
+
+  return priceMatrixByVenue;
+}
+
+function buildCoctelExtrasByVenue(rows) {
+  const extrasByVenue = {};
+  for (const venue of VENUES) extrasByVenue[venue.id] = {};
+
+  rows.forEach((row, index) => {
+    const labels = parseServiceNames(row);
+    const venueCell = pickColumn(row, SPREADSHEET_COLUMNS.venue);
+    const yearCell = pickColumn(row, SPREADSHEET_COLUMNS.year);
+    const priceCell = pickColumn(row, SPREADSHEET_COLUMNS.coctelPricePerPerson);
+    const minEurosCell = pickColumnStrict(row, SPREADSHEET_COLUMNS.coctelExtraMinEuros);
+
+    if (!labels || !venueCell || !yearCell) return;
+    const venueIds = parseVenueIds(venueCell);
+    const year = parseYearCell(yearCell);
+    const price = parseMoney(priceCell);
+    const minEuros = parseMoney(minEurosCell);
+    if (!venueIds.length || !year || price === null) return;
+
+    const id = buildServiceId(labels.ca || labels.es || labels.en, index);
+    const extra = {
+      id,
+      label: String(labels.ca).trim(),
+      labels,
+      optional: true,
+      year,
+    };
+
+    if (minEuros !== null) {
+      extra.pricePerPerson = price;
+      extra.minPrice = minEuros;
+    } else {
+      extra.quantityBased = true;
+      extra.unit = 'person';
+      extra.price = price;
+    }
+
+    for (const venueId of venueIds) {
+      if (!extrasByVenue[venueId][year]) extrasByVenue[venueId][year] = [];
+      extrasByVenue[venueId][year].push(extra);
+    }
+  });
+
+  return extrasByVenue;
+}
+
+function applyCoctelDataToConfig(priceMatrixByVenue, extrasByVenue) {
+  for (const venue of VENUES) {
+    if (!PRICE_CONFIG.venues[venue.id]) continue;
+    if (priceMatrixByVenue[venue.id]) {
+      PRICE_CONFIG.venues[venue.id].coctelPriceMatrix = priceMatrixByVenue[venue.id];
+    }
+    if (extrasByVenue[venue.id]) {
+      PRICE_CONFIG.venues[venue.id].coctelExtras = extrasByVenue[venue.id];
+    }
+  }
+}
+
+export async function loadCoctelDataFromSpreadsheet() {
+  const response = await fetch(COCTEL_SPREADSHEET_URL, { cache: 'no-store' });
+  if (!response.ok) throw new Error(`Coctel spreadsheet fetch failed: ${response.status}`);
+
+  const buffer = await response.arrayBuffer();
+  const workbook = XLSX.read(buffer, { type: 'array' });
+
+  const coctelSheetName = workbook.SheetNames.find(name => normText(name) === normText('Coctel'));
+  const coctelExtresSheetName = workbook.SheetNames.find(name => normText(name) === normText('CoctelExtres'));
+
+  const priceRows = coctelSheetName ? sheetRowsWithHeaders(workbook.Sheets[coctelSheetName]) : [];
+  const extraRows = coctelExtresSheetName ? sheetRowsWithHeaders(workbook.Sheets[coctelExtresSheetName]) : [];
+
+  if (!priceRows.length) console.warn('Coctel sheet not found in spreadsheet');
+  if (!extraRows.length) console.warn('CoctelExtres sheet not found in spreadsheet');
+
+  const priceMatrix = buildCoctelPriceMatrixFromRows(priceRows);
+  const extrasByVenue = buildCoctelExtrasByVenue(extraRows);
+
+  applyCoctelDataToConfig(priceMatrix, extrasByVenue);
+  return { priceMatrix, extrasByVenue };
 }
 
 function sheetRowsWithHeaders(sheet) {

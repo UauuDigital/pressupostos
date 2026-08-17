@@ -2,7 +2,6 @@ import { PRICE_CONFIG } from './config.js';
 import { wantsDropdown, getOptionLabel } from './parsers.js';
 import { normText } from './utils.js';
 import { eur } from '../lib/formatters.js';
-import { COCTEL_VENUE_GROUP, COCTEL_PRICE_MATRIX, COCTEL_EXTRAS_BY_YEAR } from './coctelPricing.js';
 
 function lookupFincaPrice(venueId, year, month, dow) {
   const v = PRICE_CONFIG.venues[venueId];
@@ -28,11 +27,10 @@ function lookupFincaPrice(venueId, year, month, dow) {
 }
 
 function lookupCoctelPrice(venueId, year, month, dow) {
-  const groupId = COCTEL_VENUE_GROUP[venueId];
-  const matrix = groupId && COCTEL_PRICE_MATRIX[groupId];
-  if (!matrix) return null;
+  const v = PRICE_CONFIG.venues[venueId];
+  if (!v || !v.coctelPriceMatrix) return null;
 
-  const years = Object.keys(matrix).map(Number).sort((a, b) => a - b);
+  const years = Object.keys(v.coctelPriceMatrix).map(Number).sort((a, b) => a - b);
   if (!years.length) return null;
 
   let usedYear = years[0];
@@ -40,7 +38,7 @@ function lookupCoctelPrice(venueId, year, month, dow) {
     if (y <= year) usedYear = y;
   }
 
-  const dayMatrix = matrix[usedYear];
+  const dayMatrix = v.coctelPriceMatrix[usedYear];
   if (!dayMatrix || !dayMatrix[dow]) return null;
 
   const matches = dayMatrix[dow].filter(r => r.months.includes(month));
@@ -73,7 +71,10 @@ function getFincaExtras(venueId, year) {
 }
 
 function getCoctelExtras(venueId, year) {
-  const years = Object.keys(COCTEL_EXTRAS_BY_YEAR).map(Number).sort((a, b) => a - b);
+  const v = PRICE_CONFIG.venues[venueId];
+  if (!v || !v.coctelExtras) return [];
+
+  const years = Object.keys(v.coctelExtras).map(Number).sort((a, b) => a - b);
   if (!years.length) return [];
 
   let usedYear = years[0];
@@ -81,7 +82,7 @@ function getCoctelExtras(venueId, year) {
     if (y <= year) usedYear = y;
   }
 
-  return (COCTEL_EXTRAS_BY_YEAR[usedYear] || []).filter(e => !e.venueIds || e.venueIds.includes(venueId));
+  return v.coctelExtras[usedYear] || [];
 }
 
 export function getExtras(venueId, year, format = 'finca') {
