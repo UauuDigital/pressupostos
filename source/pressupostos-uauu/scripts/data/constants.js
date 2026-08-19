@@ -2,10 +2,9 @@ export const MONTHS_CA = ['Gener', 'Febrer', 'Març', 'Abril', 'Maig', 'Juny', '
 export const DAYS_CA = ['Diumenge', 'Dilluns', 'Dimarts', 'Dimecres', 'Dijous', 'Divendres', 'Dissabte'];
 export const DAYS_SHORT = ['Dg', 'Dl', 'Dm', 'Dc', 'Dj', 'Dv', 'Ds'];
 
-export const SPREADSHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTQJRPzbjDctU5oo8z1Q-ssJvgMiiCcFFICdBvlti5pYhUJW38GqDnNTMuzZMsN7pInxal1kBhNcLh3/pub?output=xlsx';
-
-// Full nou (només pestanyes Coctel i CoctelExtres) — dades del format Còctel, abans hardcoded a coctelPricing.js.
-export const COCTEL_SPREADSHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSuaSeYd6hIrqQXicBr9dJ7YPeW0uRf43ivSxaTS6L3GDjWj496qrkCy1gnR5AXuAm9a4lGm2URHt22/pub?output=xlsx';
+// Full unificat (Hoja 1, PreusMenu, BarraLliure, Coctel, CoctelExtres) — abans eren dos fulls separats.
+export const SPREADSHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSuaSeYd6hIrqQXicBr9dJ7YPeW0uRf43ivSxaTS6L3GDjWj496qrkCy1gnR5AXuAm9a4lGm2URHt22/pub?output=xlsx';
+export const COCTEL_SPREADSHEET_URL = SPREADSHEET_URL;
 
 export const VENUES = [
   { id: 'mas-vivencs', name: 'Mas Vivencs', logo: 'assets/logo-mas-vivencs.png', type: 'Mas Rural' },
