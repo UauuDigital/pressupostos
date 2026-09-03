@@ -235,7 +235,7 @@ function parseMonths(monthCell) {
   const monthMap = {
     'gener': 1, 'january': 1, 'enero': 1, '1': 1,
     'febrer': 2, 'february': 2, 'febrero': 2, '2': 2,
-    'març': 3, 'march': 3, 'marzo': 3, '3': 3,
+    'marc': 3, 'march': 3, 'marzo': 3, '3': 3,
     'abril': 4, 'april': 4, '4': 4,
     'maig': 5, 'may': 5, 'mayo': 5, '5': 5,
     'juny': 6, 'june': 6, 'junio': 6, '6': 6,
