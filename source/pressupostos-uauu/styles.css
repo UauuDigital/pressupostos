@@ -1299,6 +1299,25 @@ input[type="range"]::-webkit-slider-thumb {
   cursor: not-allowed;
 }
 
+.app-footer {
+  display: flex;
+  justify-content: center;
+  padding: 24px 48px 32px;
+}
+
+.app-footer-support-link {
+  color: var(--color-ink);
+  font-size: 0.8rem;
+  opacity: 0.55;
+  text-decoration: none;
+}
+
+.app-footer-support-link:hover,
+.app-footer-support-link:focus-visible {
+  opacity: 1;
+  text-decoration: underline;
+}
+
 /* ── Responsivitat ── */
 
 .mobile-summary-bar,

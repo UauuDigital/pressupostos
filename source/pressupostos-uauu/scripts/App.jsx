@@ -280,6 +280,17 @@ export default function App() {
           <SummaryPanel form={form} quote={quote} lang={lang} extraOptions={form.extraOptions} mobileDrawer />
         </div>
       </div>
+
+      <footer className="app-footer">
+        <a
+          className="app-footer-support-link"
+          href="https://tiquets.uauu.cat/?repo=uauudigital-pressupostos-2"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Suport
+        </a>
+      </footer>
     </div>
   );
 }
