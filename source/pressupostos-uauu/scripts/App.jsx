@@ -284,7 +284,7 @@ export default function App() {
       <footer className="app-footer">
         <a
           className="app-footer-support-link"
-          href="https://tiquets.uauu.cat/?repo=uauudigital-pressupostos-2"
+          href="https://tiquets.uauu.cat/?repo=uauudigital-pressupostos"
           target="_blank"
           rel="noopener noreferrer"
         >
