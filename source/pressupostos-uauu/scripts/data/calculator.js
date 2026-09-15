@@ -163,6 +163,16 @@ export function computeQuote({ venue, date, guests, format = 'finca', selectedEx
       }
     }
 
+    const switchOption = Array.isArray(e.extraExtresOptions)
+      ? e.extraExtresOptions.find(opt => opt && opt.switchMode)
+      : null;
+    if (switchOption) {
+      const rawSwitchSelection = String(extraOpts.switchSide ?? extraOpts.extraSelection ?? '').trim().toLowerCase();
+      const selectedSwitchSide = ['left', 'esquerra', 'a', '0'].includes(rawSwitchSelection) ? 'left' : 'right';
+      currentPrice = Number(selectedSwitchSide === 'left' ? switchOption.leftPrice ?? 0 : switchOption.rightPrice ?? 0);
+      variantSuffix = ` (${selectedSwitchSide === 'left' ? switchOption.leftLabel : switchOption.rightLabel})`;
+    }
+
     if (e.id === 'barlliure') {
       const rates = e.barLliureRates || {};
       const premium = extraOpts.premium === true;
@@ -212,6 +222,7 @@ export function computeQuote({ venue, date, guests, format = 'finca', selectedEx
 
     } else {
       computedPrice = currentPrice;
+      if (switchOption) priceDetail = variantSuffix.trim().replace(/^\(|\)$/g, '');
     }
 
     if (e.extraType === 'llinda') {

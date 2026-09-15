@@ -91,10 +91,7 @@ export default function SummaryPanel({ form, quote, extraOptions, lang = 'ca', m
             )}
 
             {quote.extrasLines
-              .filter(e => {
-                if (e.id === 'barlliure') return true;
-                return e.computedPrice > 0;
-              })
+              .filter(e => e.id === 'barlliure' || e.computedPrice > 0)
               .map(e => (
                 <div key={e.id} className="line-item">
                   <div className="li-left">
