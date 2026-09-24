@@ -1,0 +1,23 @@
+#!/bin/sh
+# Hook de Git: regenera version.json quan el commit inclou fitxers que es
+# despleguen, perquè l'avís "Hi ha una versió nova" (uauu-update-check.js)
+# sàpiga que hi ha una versió nova.
+#
+# S'activa UNA vegada per clon amb:   git config core.hooksPath .githooks
+#
+# Fitxer(s) a generar: variable VERSION_FILES (separats per espais).
+VERSION_FILES="${VERSION_FILES:-source/pressupostos-uauu/version.json}"
+
+# Fitxers que NO compten com a canvi desplegable (documentació, proves...).
+IGNORA='^(docs/|tests?/|\.claude/|\.impeccable/|\.vscode/|\.githooks/|supabase/|.*\.md$|.*version\.json$|\.gitignore$)'
+
+if ! git diff --cached --name-only --diff-filter=ACMRD | grep -vqE "$IGNORA"; then
+  exit 0  # només canvis de documentació: no cal versió nova
+fi
+
+VERSIO="$(date -u +%Y%m%d%H%M%S)"
+for f in $VERSION_FILES; do
+  printf '{"version":"%s"}\n' "$VERSIO" > "$f"
+  git add "$f"
+done
+exit 0

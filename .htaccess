@@ -1,9 +1,3 @@
-<IfModule mod_deflate.c>
-  AddOutputFilterByType DEFLATE text/html text/css application/javascript
-</IfModule>
-
-# Abans aquí hi havia "Expires 1 any" per a JS i CSS: si es publicava sense
-# canviar el ?v=, els usuaris es quedaven amb la versió vella. Ara:
 # ── Caché (política comuna UAUU) ─────────────────────────────────────────────
 # Còpia mestra: Uauu/_shared-assets/cache/htaccess-cache.conf
 #
