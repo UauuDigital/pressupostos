@@ -200,7 +200,7 @@ export default function App() {
                 <div className="range-labels"><span>10</span><span>400</span></div>
               </div>
             </div>
-            <DateInfoStrip venueId={form.venue} date={form.date} format={form.format} />
+            <DateInfoStrip venueId={form.venue} date={form.date} format={form.format} lang={lang} />
           </div>
 
           <ExtrasSection

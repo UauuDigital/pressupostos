@@ -4,7 +4,33 @@ import { PRICE_CONFIG } from '../data/config.js';
 import { DAYS_CA, MONTHS_CA, VENUES } from '../data/constants.js';
 import { eur } from '../lib/formatters.js';
 
-export default function DateInfoStrip({ venueId, date, format = 'finca' }) {
+const DAY_NAMES = {
+  ca: DAYS_CA,
+  es: ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'],
+  en: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+};
+
+const UNAVAILABLE_TEXT = {
+  ca: (day, venue, options) => options.length
+    ? `${day} no és un dia disponible per a ${venue} en aquest mes. Dies disponibles: ${options}.`
+    : `No hi ha cap dia disponible per a ${venue} en aquest mes.`,
+  es: (day, venue, options) => options.length
+    ? `${day} no es un día disponible para ${venue} en este mes. Días disponibles: ${options}.`
+    : `No hay ningún día disponible para ${venue} en este mes.`,
+  en: (day, venue, options) => options.length
+    ? `${day} is not an available day for ${venue} in this month. Available days: ${options}.`
+    : `There are no available days for ${venue} in this month.`,
+};
+
+// Dies de la setmana (dilluns primer) que tenen preu per a aquesta finca, any i mes.
+function availableDays(venueId, year, month, format, names) {
+  return [1, 2, 3, 4, 5, 6, 0]
+    .filter(dow => lookupPrice(venueId, year, month, dow, format))
+    .map(dow => names[dow].toLowerCase())
+    .join(', ');
+}
+
+export default function DateInfoStrip({ venueId, date, format = 'finca', lang = 'ca' }) {
   if (!venueId || !date) return null;
   const d = new Date(date + 'T12:00:00');
   const year = d.getFullYear(), month = d.getMonth() + 1, dow = d.getDay();
@@ -15,11 +41,16 @@ export default function DateInfoStrip({ venueId, date, format = 'finca' }) {
   if (!hasSpreadsheetPriceData) return (
     <div className="alert alert-info">Preus d'aquesta finca pendents de configurar.</div>
   );
-  if (!slot) return (
-    <div className="alert alert-error">
-      {DAYS_CA[dow]} no és un dia disponible per a {VENUES.find(v => v.id === venueId)?.name}. Tria divendres, dissabte o diumenge.
-    </div>
-  );
+  if (!slot) {
+    const names = DAY_NAMES[lang] || DAY_NAMES.ca;
+    const text = UNAVAILABLE_TEXT[lang] || UNAVAILABLE_TEXT.ca;
+    const venueName = VENUES.find(v => v.id === venueId)?.name;
+    return (
+      <div className="alert alert-error">
+        {text(names[dow], venueName, availableDays(venueId, year, month, format, names))}
+      </div>
+    );
+  }
 
   return (
     <div>

@@ -3,50 +3,37 @@ import { wantsDropdown, getOptionLabel } from './parsers.js';
 import { normText } from './utils.js';
 import { eur } from '../lib/formatters.js';
 
-function lookupFincaPrice(venueId, year, month, dow) {
-  const v = PRICE_CONFIG.venues[venueId];
-  if (!v || !v.priceMatrix) return null;
+// Busca el preu a l'any demanat; si aquell any no té cap fila per a aquest dia i mes
+// (p. ex. tarifes de l'any nou només parcialment carregades), prova els anys anteriors.
+// Si no hi ha cap any anterior, usa el primer any disponible.
+function lookupInMatrix(matrix, year, month, dow) {
+  if (!matrix) return null;
 
-  const years = Object.keys(v.priceMatrix).map(Number).sort((a, b) => a - b);
+  const years = Object.keys(matrix).map(Number).sort((a, b) => a - b);
   if (!years.length) return null;
 
-  let usedYear = years[0];
-  for (const y of years) {
-    if (y <= year) usedYear = y;
+  const previous = years.filter(y => y <= year).reverse();
+  const candidates = previous.length ? previous : [years[0]];
+
+  for (const usedYear of candidates) {
+    const rows = matrix[usedYear]?.[dow];
+    if (!rows) continue;
+
+    const matches = rows.filter(r => r.months.includes(month));
+    if (!matches.length) continue;
+
+    const withPenalty = matches.find(r => Number.isFinite(Number(r.minimumPenaltyPerPerson)));
+    return { ...(withPenalty || matches[0]), year: usedYear };
   }
+  return null;
+}
 
-  const dayMatrix = v.priceMatrix[usedYear];
-  if (!dayMatrix || !dayMatrix[dow]) return null;
-
-  const matches = dayMatrix[dow].filter(r => r.months.includes(month));
-  if (!matches.length) return null;
-
-  const withPenalty = matches.find(r => Number.isFinite(Number(r.minimumPenaltyPerPerson)));
-  const row = withPenalty || matches[0];
-  return row ? { ...row, year: usedYear } : null;
+function lookupFincaPrice(venueId, year, month, dow) {
+  return lookupInMatrix(PRICE_CONFIG.venues[venueId]?.priceMatrix, year, month, dow);
 }
 
 function lookupCoctelPrice(venueId, year, month, dow) {
-  const v = PRICE_CONFIG.venues[venueId];
-  if (!v || !v.coctelPriceMatrix) return null;
-
-  const years = Object.keys(v.coctelPriceMatrix).map(Number).sort((a, b) => a - b);
-  if (!years.length) return null;
-
-  let usedYear = years[0];
-  for (const y of years) {
-    if (y <= year) usedYear = y;
-  }
-
-  const dayMatrix = v.coctelPriceMatrix[usedYear];
-  if (!dayMatrix || !dayMatrix[dow]) return null;
-
-  const matches = dayMatrix[dow].filter(r => r.months.includes(month));
-  if (!matches.length) return null;
-
-  const withPenalty = matches.find(r => Number.isFinite(Number(r.minimumPenaltyPerPerson)));
-  const row = withPenalty || matches[0];
-  return row ? { ...row, year: usedYear } : null;
+  return lookupInMatrix(PRICE_CONFIG.venues[venueId]?.coctelPriceMatrix, year, month, dow);
 }
 
 export function lookupPrice(venueId, year, month, dow, format = 'finca') {
