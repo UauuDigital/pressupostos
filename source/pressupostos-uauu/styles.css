@@ -1579,3 +1579,142 @@ input[type="range"]::-webkit-slider-thumb {
     font-size: 2.2rem;
   }
 }
+
+/* STAY */
+.stay-head {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.stay-toggle {
+  min-height: 44px;
+  padding: 11px 20px;
+  border: 1px solid var(--color-ink);
+  border-radius: var(--radius-sm);
+  background: var(--color-white);
+  font-family: var(--font-sans);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-ink);
+  cursor: pointer;
+}
+
+.stay-toggle:hover {
+  background: var(--color-sand-pale);
+}
+
+.stay-toggle--on {
+  background: var(--color-ink);
+  color: var(--color-white);
+}
+
+.stay-toggle--on:hover {
+  background: var(--color-charcoal);
+}
+
+.stay-toggle:focus-visible,
+.stay-section .extra-quantity-input:focus-visible {
+  outline: 2px solid var(--color-ink);
+  outline-offset: 2px;
+}
+
+.stay-base {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: 15px;
+  color: var(--color-body);
+}
+
+.stay-note {
+  margin: 14px 0 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--color-divider);
+  font-family: var(--font-serif);
+  font-size: 15px;
+  line-height: 1.45;
+  color: var(--color-body);
+}
+
+/* Data fora de disponibilitat: vora esquerra i text més fort (no bloqueja) */
+.stay-note--alert {
+  padding-left: 12px;
+  border-left: 3px solid var(--color-ink);
+  color: var(--color-ink);
+}
+
+.stay-services {
+  min-width: 0;
+  margin: 20px 0 0 4px;
+  padding: 0 0 0 16px;
+  border: 0;
+  border-left: 3px solid var(--color-sand);
+}
+
+.stay-legend {
+  padding: 0;
+  margin-bottom: 6px;
+  font-family: var(--font-sans);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-body);
+}
+
+.stay-row {
+  display: grid;
+  gap: 6px;
+  padding: 12px 0;
+}
+
+.stay-row + .stay-row {
+  border-top: 1px solid var(--color-divider);
+}
+
+.stay-row-label {
+  font-family: var(--font-serif);
+  font-size: 16px;
+  font-weight: 400;
+  color: var(--color-ink);
+}
+
+.stay-row-input {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.stay-section .extra-quantity-unit {
+  color: var(--color-body);
+}
+
+.stay-row-price {
+  font-family: var(--font-serif);
+  font-size: 14px;
+  color: var(--color-body);
+}
+
+@media (min-width: 768px) {
+  .stay-head {
+    flex-direction: row;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .stay-services {
+    margin-left: 8px;
+    padding-left: 24px;
+  }
+
+  .stay-row {
+    grid-template-columns: 120px minmax(0, 1fr);
+    column-gap: 16px;
+    align-items: center;
+  }
+
+  .stay-row-price {
+    grid-column: 2;
+  }
+}

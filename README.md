@@ -5,6 +5,7 @@ Aplicació web estàtica per a calcular pressupostos de bodas dinàmicament. Pen
 ## Descripció
 
 Eina interactiva que permet als usuaris:
+
 - Seleccionar finca (4 venues disponibles: Mas Vivencs, Castell de Tous, Can Macià, Ca n'Alzina)
 - Triar data de l'event
 - Indicar nombre de convidats
@@ -143,6 +144,8 @@ const SPREADSHEET_COLUMNS = {
 
 **Per afegir:** Edita el Google Sheet i afegeix files noves amb servei, preu, finques i any aplicable.
 
+**STAY (només Ca n'Alzina):** no ve del Sheet. La lògica i els preus són hardcodejats a `scripts/data/stay.js` (UI a `scripts/components/StaySection.jsx`), pendents de migrar al Google Sheet.
+
 ### 🌐 Canviar traduccions
 
 **Fitxer:** `source/pressupostos-uauu/scripts/data/config.js`
@@ -160,6 +163,7 @@ const PDF_TEXT = {
 **Fitxer:** `source/pressupostos-uauu/scripts/data/calculator.js`
 
 Funcions principals:
+
 - `lookupPrice()` - Buscar preu per venue/data/mes/dia de setmana
 - `getExtras()` - Obtenir serveis disponibles per venue/any
 - `computeQuote()` - **Funció principal de càlcul** - retorna pressupost complet
@@ -173,6 +177,7 @@ Funcions principals:
 ## Datos del Google Sheets
 
 Per carregar serveis addicionals, cal configurar un Google Sheet públic amb les columnes:
+
 - `nom servei` - Nom del servei
 - `preu` - Preu unitari
 - `masia` - Quins venues l'ofereixen (format: venue IDs separats per coma o *)
@@ -185,6 +190,7 @@ Per carregar serveis addicionals, cal configurar un Google Sheet públic amb les
 ## Prova local
 
 ### Requisits
+
 - Node.js 14+
 
 ### Executar el servidor

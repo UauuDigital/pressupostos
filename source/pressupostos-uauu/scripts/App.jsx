@@ -3,12 +3,14 @@ import { PRICE_CONFIG } from './data/config.js';
 import { computeQuote, getExtras } from './data/calculator.js';
 import { normText } from './data/utils.js';
 import { eur } from './lib/formatters.js';
+import { EMPTY_STAY } from './data/stay.js';
 import VenueCards from './components/VenueCards.jsx';
 import DatePicker from './components/DatePicker.jsx';
 import GuestsControl from './components/GuestsControl.jsx';
 import Toggle from './components/Toggle.jsx';
 import DateInfoStrip from './components/DateInfoStrip.jsx';
 import ExtrasSection from './components/ExtrasSection.jsx';
+import StaySection from './components/StaySection.jsx';
 import SummaryPanel from './components/SummaryPanel.jsx';
 
 const DEFAULT_SELECTED_EXTRA_LABELS = ['cerimonia', 'allotjament', 'menu infantil'];
@@ -44,6 +46,7 @@ export default function App() {
       extraQuantities: {},
       extraOptions: {},
       extraVariants: { pernil: 'res' },
+      stay: EMPTY_STAY,
       coupleName: '',
       notes: '',
     };
@@ -73,6 +76,14 @@ export default function App() {
       }
     }));
   }
+  function setStay(patch) {
+    setForm(f => ({ ...f, stay: { ...f.stay, ...patch } }));
+  }
+  // Activa o desactiva STAY des del desplegable de serveis opcionals (en desactivar-lo, es posen els camps a 0).
+  // És idempotent a propòsit: el camp de cerca pot disparar la selecció dues vegades (onChange + onBlur).
+  function setStayActive(active) {
+    setForm(f => ({ ...f, stay: active ? { ...f.stay, active: true } : EMPTY_STAY }));
+  }
   function setVariant(id, variantId) {
     setForm(f => ({
       ...f,
@@ -91,6 +102,11 @@ export default function App() {
     const defaults = computeDefaultExtrasState(extras);
     setForm(f => ({ ...f, selectedExtras: defaults.selectedExtras, extraQuantities: defaults.extraQuantities }));
   }, [form.venue, dateYear, form.format]);
+
+  // En canviar de finca, l'STAY es reinicia (només aplica a Ca n'Alzina)
+  React.useEffect(() => {
+    setForm(f => ({ ...f, stay: EMPTY_STAY }));
+  }, [form.venue]);
 
   const quote = React.useMemo(() => {
     try {
@@ -217,7 +233,11 @@ export default function App() {
             onQuantityChange={setQuantity}
             onOptionChange={setExtraOption}
             onVariantChange={setVariant}
+            stayActive={!!form.stay?.active}
+            onStayChange={setStayActive}
           />
+
+          <StaySection venueId={form.venue} stay={form.stay} date={form.date} onChange={setStay} />
 
           {barLliureExtra && (
             <div className="form-section">

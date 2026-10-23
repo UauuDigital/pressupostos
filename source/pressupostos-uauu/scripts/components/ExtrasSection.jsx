@@ -3,6 +3,7 @@ import { getExtras } from '../data/calculator.js';
 import { eur } from '../lib/formatters.js';
 import { normalizeQuantity } from '../utils/input.js';
 import DropdownQuantitySelect from './DropdownQuantitySelect.jsx';
+import { STAY_VENUE_ID, STAY_OPTION } from '../data/stay.js';
 
 export default function ExtrasSection({
   venueId,
@@ -18,8 +19,12 @@ export default function ExtrasSection({
   onQuantityChange,
   onOptionChange,
   onVariantChange,
+  stayActive = false,
+  onStayChange,
 }) {
   const [optionalSelection, setOptionalSelection] = React.useState('');
+  // STAY només es pot triar a Ca n'Alzina; viu al mateix desplegable que els serveis opcionals
+  const showStayOption = venueId === STAY_VENUE_ID && typeof onStayChange === 'function';
   const extras = React.useMemo(
     () => (venueId && year ? getExtras(venueId, year, format).filter(e => e.id !== 'barlliure') : []),
     [venueId, year, format]
@@ -42,7 +47,10 @@ export default function ExtrasSection({
   const optionalExtras = extras.filter(e => e.optional);
   const optionalOptions = React.useMemo(() => {
     const counts = new Map();
-    return optionalExtras.map(e => {
+    const stayOption = showStayOption
+      ? [{ extra: STAY_OPTION, baseLabel: STAY_OPTION.label, displayLabel: STAY_OPTION.label, condMandatory: false }]
+      : [];
+    return [...stayOption, ...optionalExtras.map(e => {
       const baseLabel = String(e.label || '').trim();
       const condMandatory = e.mandatoryWhen && dow !== null ? e.mandatoryWhen(dow, month) : false;
       const nextCount = (counts.get(baseLabel) || 0) + 1;
@@ -50,9 +58,9 @@ export default function ExtrasSection({
       const uniqueLabel = nextCount > 1 ? `${baseLabel} (${nextCount})` : baseLabel;
       const displayLabel = condMandatory ? `${uniqueLabel} — obligatori` : uniqueLabel;
       return { extra: e, baseLabel, displayLabel, condMandatory };
-    });
-  }, [optionalExtras, dow, month]);
-  if (!venueId || !year || !extras.length) return null;
+    })];
+  }, [optionalExtras, dow, month, showStayOption]);
+  if (!venueId || !year || (!extras.length && !showStayOption)) return null;
 
   function parseOptionalSelectionValue(value, { allowPartial = true } = {}) {
     const raw = String(value || '').trim();
@@ -82,6 +90,7 @@ export default function ExtrasSection({
   }
 
   function isExtraSelected(extra) {
+    if (extra.id === STAY_OPTION.id) return !!stayActive;
     if (extra.quantityBased) {
       if (selectedExtras?.[extra.id] === true) return true;
       const quantity = extraQuantities?.[extra.id] ?? 0;
@@ -93,6 +102,11 @@ export default function ExtrasSection({
   function handleOptionalSelect(selectionValue) {
     if (!selectionValue) return;
     const extraId = selectionValue;
+    if (extraId === STAY_OPTION.id) {
+      // Valor explícit (no alternança): el camp de cerca crida això dues vegades (onChange + onBlur)
+      if (showStayOption) onStayChange(!stayActive);
+      return;
+    }
     const extra = optionalExtras.find(e => e.id === extraId);
     if (!extra) return;
     const condMandatory = extra.mandatoryWhen && dow !== null ? extra.mandatoryWhen(dow, month) : false;
@@ -131,7 +145,7 @@ export default function ExtrasSection({
   return (
     <div className="form-section">
       <div className="section-title">Serveis addicionals</div>
-      {optionalExtras.length > 0 && (
+      {optionalOptions.length > 0 && (
         <div className="field optional-services-field" style={{ marginBottom: '16px' }}>
           <label htmlFor="optional-services-select">Afegir o treure servei opcional</label>
           <input

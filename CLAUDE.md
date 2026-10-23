@@ -12,3 +12,6 @@ Regles específiques d'aquest projecte (les globals són a `~/.claude/CLAUDE.md`
 - `source/pressupostos-uauu/version.json`: es regenera amb el hook `.githooks/pre-commit` (activar un cop per clon: `git config core.hooksPath .githooks`).
 - `npm run build` posa `?v=<hash>` als CSS/JS locals d'`index.html`.
 - Plesk: html/htm/js/mjs/css/json/webmanifest NO han d'estar a "Serve static files directly by nginx".
+
+## Servei STAY
+- STAY (només Ca n'Alzina): preus hardcodejats a `source/pressupostos-uauu/scripts/data/stay.js`, pendents de migrar al Google Sheet.

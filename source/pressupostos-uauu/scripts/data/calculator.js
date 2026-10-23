@@ -2,6 +2,7 @@ import { PRICE_CONFIG } from './config.js';
 import { wantsDropdown, getOptionLabel } from './parsers.js';
 import { normText } from './utils.js';
 import { eur } from '../lib/formatters.js';
+import { STAY_VENUE_ID, getStayLines } from './stay.js';
 
 // Busca el preu a l'any demanat; si aquell any no té cap fila per a aquest dia i mes
 // (p. ex. tarifes de l'any nou només parcialment carregades), prova els anys anteriors.
@@ -88,7 +89,7 @@ export function getExtraLabel(extra, lang = 'ca') {
   return String(extra?.labels?.[lang] || extra?.labels?.ca || extra?.label || '').trim();
 }
 
-export function computeQuote({ venue, date, guests, format = 'finca', selectedExtras = {}, extraQuantities, extraOptions = {}, extraVariants = {}, lang = 'ca' }) {
+export function computeQuote({ venue, date, guests, format = 'finca', selectedExtras = {}, extraQuantities, extraOptions = {}, extraVariants = {}, stay, lang = 'ca' }) {
   if (!venue || !date || guests < 1) return null;
 
   const d = new Date(date + 'T12:00:00');
@@ -237,6 +238,9 @@ export function computeQuote({ venue, date, guests, format = 'finca', selectedEx
 
     return { ...e, isMandatory, condMandatory, included: included && hasQuantity, computedPrice, priceDetail };
   }).filter(e => e.included);
+
+  // Servei STAY: només per a Ca n'Alzina; les seves línies s'afegeixen al final dels extras
+  if (venue === STAY_VENUE_ID) extrasLines.push(...getStayLines({ stay, lang }));
 
   const extrasTotal = extrasLines.reduce((s, e) => s + e.computedPrice, 0);
   const subtotal = menuBase + penaltyAmt + extrasTotal;
